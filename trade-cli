@@ -1,0 +1,176 @@
+#!/usr/bin/env python
+'''
+The purpose of trade-cli is to be a wrapper that connects to ccxt using library/exchange templates.
+It enables the same generalized commands to be sent, irrespective of the exchange used.
+'''
+import argparse,sys,os,re
+base_dir = os.path.abspath(os.path.dirname(__file__)) # Get the absolute path to the folder containing this script
+sys.path.insert(0, base_dir) # Add the project root (parent of 'library') to sys.path
+import importlib
+from library.exchange.functions import initialize_exchange, set_sandbox_mode
+
+def confirm_order(prompt="Confirm Order? [y/N] ", no_confirm=False):
+    """Prompt user for confirmation before proceeding.
+    
+    Args:
+        prompt: The confirmation prompt to display
+        no_confirm: If True, skips confirmation and returns True
+    
+    Returns:
+        bool: True if confirmed or no_confirm is True, False if cancelled
+    """
+    if no_confirm:
+        return True
+        
+    user_input = input(prompt).lower()
+    if user_input != "y":
+        print("Order cancelled by user.")
+        return False
+    return True
+
+def main():
+    parser = argparse.ArgumentParser(description="Trade CLI Tool")
+    parser.add_argument('--sandbox', action='store_true', help='Use sandbox (testnet) environment')
+    parser.add_argument('--daemonize', action='store_true', help='Run the trade-cli as a daemon to speed up exchange execution')
+
+    # Create a top-level parser for commands
+    subparsers = parser.add_subparsers(dest='command')
+
+    # Entry command (To create orders)
+    entry_parser = subparsers.add_parser('entry', help='Entry-related commands')
+    entry_parser.add_argument('--market-type', choices=['spot', 'futures'], default='spot')
+    entry_parser.add_argument('--direction', choices=['buy', 'long', 'sell', 'short'], 
+                              required=True, help="Trade direction: 'buy'/'long' or 'sell'/'short'")
+    entry_parser.add_argument('--size', type=float, required=True, help='Size of the trade (number of units to buy/sell)')
+    entry_parser.add_argument('--price', type=float, help='The entry price for your trade')
+    entry_parser.add_argument('--order-type', choices=['market', 'limit'], default='limit',
+                              help='Order type: market or limit (default: limit)')
+    entry_parser.add_argument('--pair', help='Pair (e.g. btc-usd)')
+    entry_parser.add_argument('--exchange', help='Exchange (e.g. hyperliquid)')
+    entry_parser.add_argument('--no-confirm', action='store_true', help='Skip human confirmation (for bots)')
+    
+    # Cancel command (To cancel orders)
+    cancel_parser = subparsers.add_parser('cancel', help='cancel-related commands')
+    cancel_parser.add_argument('--market-type', choices=['spot', 'futures'], default='spot')
+    cancel_parser.add_argument('--direction', choices=['buy', 'long', 'sell', 'short'], 
+                              required=True, help="Trade direction: 'buy'/'long' or 'sell'/'short'")
+    cancel_parser.add_argument('--size', type=float, required=True, help='Size of the trade (number of units to buy/sell)')
+    cancel_parser.add_argument('--pair', help='Pair (e.g. btc-usd)')
+    cancel_parser.add_argument('--cancel-all', help='Cancel all orders')
+    cancel_parser.add_argument('--exchange', help='Exchange (e.g. hyperliquid)')
+    cancel_parser.add_argument('--no-confirm', action='store_true', help='Skip human confirmation (for bots)')
+    
+    # Stop command (for money management)
+    stop_parser = subparsers.add_parser('stop', help='Stop-related commands (money management)')
+    stop_parser.add_argument('--market-type', choices=['spot', 'futures'], default='spot')
+    stop_parser.add_argument('--direction', choices=['buy', 'long', 'sell', 'short'])
+    stop_parser.add_argument('--size', type=float, required=True, help='Size of the exit trade (number of units to sell)')
+    stop_parser.add_argument('--hard-stop-price', type=float, help='Exit price for your trade. The price at which you will fully exit with a market sell.'),
+    stop_parser.add_argument('--soft-stop-price', type=float, help='Exit price for your trade. The price at which you will limit sell.')
+    stop_parser.add_argument('--stop-type', choices=['fixed', 'trailing'], default='fixed',
+                              help='Order type: market or limit (default: limit)')
+    stop_parser.add_argument('--pair', help='Pair (e.g. btc-usd)')
+    stop_parser.add_argument('--exchange', help='Exchange (e.g. hyperliquid)')
+    stop_parser.add_argument('--no-confirm', action='store_true', help='Skip human confirmation (for bots)')
+
+    # Exit command (for take profit)
+    exit_parser = subparsers.add_parser('exit', help='Exit-related commands (take profit)')
+    exit_parser.add_argument('--position', help='If you want to exit an existing position')
+    exit_parser.add_argument('--size', type=float, required=True, help='Size of the exit trade (number of units to sell)')
+    exit_parser.add_argument('--price', type=float, help='Target take profit price for your trade')
+    exit_parser.add_argument('--order-type', choices=['market', 'limit'], default='limit',
+                              help='Order type: market or limit (default: limit)')
+    exit_parser.add_argument('--pair', help='Pair (e.g. btc-usd)'),
+    exit_parser.add_argument('--exchange', help='Exchange (e.g. hyperliquid)')
+    exit_parser.add_argument('--no-confirm', action='store_true', help='Skip human confirmation (for bots)')
+
+    # Account command
+    account_parser = subparsers.add_parser('account', help='Account-related commands')
+    account_parser.add_argument('--positions', help='Show active positions')
+    account_parser.add_argument('--balance', help='Show account balance')
+
+    # if no sub‐command was provided, show help and exit
+    args = parser.parse_args()
+    if not args.command:
+        parser.print_help()
+        sys.exit(0)
+
+    for arg, value in vars(args).items():
+        if isinstance(value, str):
+            setattr(args, arg, value.lower()) # convert all args to lowercase
+    
+    if args.pair:
+        if not re.match(r'^[a-zA-Z0-9]+-[a-zA-Z0-9]+$', args.pair):
+            raise ValueError(f"Oops! The pair format '{args.pair}' seems incorrect. Please use the format <something>-<something>, for example 'btc-usd'.")
+
+    # Checks and initialization   
+    try:
+        exchange = initialize_exchange(args.exchange, args.sandbox)
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        sys.exit(1)
+########################################
+# Position set up
+    if args.command in ('entry', 'cancel', 'stop', 'exit'):    
+        for attr, value in vars(args).items():
+            if attr == 'no_confirm':
+                if value: print("Skipping human confirmation...")
+            elif value:
+                print(f"{attr.replace('_', ' ').title()}: {value}")
+        if args.market_type == 'spot':
+            module_path = f"library.exchange.{args.exchange}.order_spot_{args.exchange}"
+        elif args.market_type == 'futures':
+            module_path = f"library.exchange.{args.exchange}.order_futures_{args.exchange}"
+                # Import exchange-specific module
+        try:
+            module = importlib.import_module(module_path)
+        except ModuleNotFoundError:
+            print(f"Error: Could not find order module at {module_path}")
+            print(f"Verify the exchange supports {args.market_type} trading")
+            sys.exit(1)
+########################################
+# Entry
+    if args.command == 'entry':
+        try:
+            if not confirm_order("Submit trade? [y/N] ", args.no_confirm): return
+            module.entry(exchange,args)
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+            sys.exit(1)
+########################################
+# Cancel
+    if args.command == 'cancel':
+        try:
+            if not confirm_order("Cancel order? [y/N] ", args.no_confirm): return
+            module.entry(exchange,args)
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+            sys.exit(1)
+########################################
+# Stop
+    if args.command == 'stop':
+        try:
+            if not confirm_order("Submit stop? [y/N] ", args.no_confirm): return
+            module.stop(exchange,args)
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+            sys.exit(1)
+########################################
+# Exit
+    elif args.command == 'exit':
+        try:
+            if not confirm_order("Submit exit? [y/N] ", args.no_confirm): return
+            module.exit(exchange,args)
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+            sys.exit(1)
+########################################
+# Account/Balance commands
+    if args.command == 'account':
+        if args.subcommand == 'balance':
+            print("Showing account balance...")
+        elif args.subcommand == 'show':
+            print("Showing trading account info...")
+
+if __name__ == "__main__":
+    main()

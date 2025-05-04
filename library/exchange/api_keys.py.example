@@ -1,0 +1,12 @@
+# api_keys.py
+API_KEYS = {
+    "myexchange": {
+        "api_key": "asdfasdfasdfasddsfads",
+        "secret_key": "asdfasdfasddfasdfa"
+    }
+    # Add more exchanges as needed
+    #"": {
+    #    "api_key": ""
+    #    "secret_key": ""
+    #},
+}
