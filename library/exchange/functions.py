@@ -1,5 +1,5 @@
 import ccxt
-from library.exchange.api_keys import API_KEYS  # Import the API keys storage
+from api_keys import API_KEYS  # Import the API keys storage
 
 def set_sandbox_mode(exchange, sandbox_mode):
     """
