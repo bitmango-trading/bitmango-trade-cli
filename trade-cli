@@ -7,7 +7,6 @@ import argparse,sys,os,re
 base_dir = os.path.abspath(os.path.dirname(__file__)) # Get the absolute path to the folder containing this script
 sys.path.insert(0, base_dir) # Add the project root (parent of 'library') to sys.path
 import importlib
-from library.exchange.functions import initialize_exchange, set_sandbox_mode
 
 def confirm_order(prompt="Confirm Order? [y/N] ", no_confirm=False):
     """Prompt user for confirmation before proceeding.
@@ -65,8 +64,9 @@ def main():
     stop_parser.add_argument('--market-type', choices=['spot', 'futures'], default='spot')
     stop_parser.add_argument('--direction', choices=['buy', 'long', 'sell', 'short'])
     stop_parser.add_argument('--size', type=float, required=True, help='Size of the exit trade (number of units to sell)')
-    stop_parser.add_argument('--hard-stop-price', type=float, help='Exit price for your trade. The price at which you will fully exit with a market sell.'),
-    stop_parser.add_argument('--soft-stop-price', type=float, help='Exit price for your trade. The price at which you will limit sell.')
+    stop_parser.add_argument('--price', type=float, help='Exit price for your trade. The price at which you will fully exit with a market sell.'),
+    stop_parser.add_argument('--order-type', choices=['market', 'limit'], default='limit',
+                              help='Order type: market or limit (default: limit)')
     stop_parser.add_argument('--stop-type', choices=['fixed', 'trailing'], default='fixed',
                               help='Order type: market or limit (default: limit)')
     stop_parser.add_argument('--pair', help='Pair (e.g. btc-usd)')
@@ -103,12 +103,6 @@ def main():
         if not re.match(r'^[a-zA-Z0-9]+-[a-zA-Z0-9]+$', args.pair):
             raise ValueError(f"Oops! The pair format '{args.pair}' seems incorrect. Please use the format <something>-<something>, for example 'btc-usd'.")
 
-    # Checks and initialization   
-    try:
-        exchange = initialize_exchange(args.exchange, args.sandbox)
-    except Exception as e:
-        print(f"Unexpected error: {str(e)}")
-        sys.exit(1)
 ########################################
 # Position set up
     if args.command in ('entry', 'cancel', 'stop', 'exit'):    

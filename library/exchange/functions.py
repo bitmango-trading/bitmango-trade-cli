@@ -36,6 +36,10 @@ def initialize_exchange(exchange_name, sandbox_mode=False):
         "enableRateLimit": True,
         "apiKey": api_key,
         "secret": secret_key,
+        "options": {
+            "adjustForTimeDifference": True,  # auto‑sync clocks
+            "recvWindow": 10_000,
+    },
     })
 
     print("CCXT Version:", ccxt.__version__)

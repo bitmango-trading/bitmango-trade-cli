@@ -1,8 +1,8 @@
 import sys
 import ccxt
-from library.exchange.functions import format_symbol # Import functions from functions.py
+from library.exchange.functions import format_symbol, initialize_exchange # Import functions from functions.py
 
-#exchange.load_markets()
+
 def entry(exchange, args):
     # Build symbol and parameters (Bybit via CCXT expects e.g. 'BTC/USDT')
     symbol = format_symbol(args.pair, format_type='slash')
@@ -15,10 +15,12 @@ def entry(exchange, args):
     
     # Send the order
     try:
+        exchange = initialize_exchange(exchange, args.sandbox, options)
+        #exchange.load_markets()
         # CCXT unified create_order
         order = exchange.create_order(
             symbol,
-            args.order_type,   # 'market' or 'limit'
+            type_,   # 'market' or 'limit'
             direction,         # 'buy' or 'sell'
             amount,
             price              # None for market orders
@@ -56,7 +58,6 @@ def stop(exchange, args):
     args.direction   # 'buy' or 'sell' for the stop order side
     args.size        # float, amount to close
     args.order_type  # 'market' or 'limit'
-    args.stop_price  # float, trigger price for the stop‑loss
     args.price       # float, limit price if using 'limit'
     """
     symbol = format_symbol(args.pair, format_type='slash')
@@ -64,13 +65,13 @@ def stop(exchange, args):
     amount = args.size
     type_ = args.order_type  # 'market' or 'limit'
     price = args.price if type_ == 'limit' else None
-    stop_price = args.stop_price
 
     params = {
-        'stopLossPrice': stop_price,
+        'stopLossPrice': price,
     }
 
     try:
+        current_server_time = exchange.fetch_time()
         order = exchange.create_order(
             symbol,
             type_,
