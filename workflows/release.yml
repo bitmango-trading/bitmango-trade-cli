@@ -7,6 +7,12 @@ on:
   push:
     branches:
       - 'releases-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version/Date (YYYY-MM-DD)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -25,9 +31,22 @@ jobs:
       - name: Extract date from branch name
         id: get_date
         run: |
-          # Branch format is releases-YYYY-MM-DD
-          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-          DATE_STR="${BRANCH_NAME#releases-}"
+          # 1. Check manual input
+          DATE_STR="${{ github.event.inputs.version }}"
+          
+          # 2. If empty, try branch name (releases-YYYY-MM-DD)
+          if [ -z "$DATE_STR" ]; then
+            BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+            if [[ "$BRANCH_NAME" == releases-* ]]; then
+              DATE_STR="${BRANCH_NAME#releases-}"
+            fi
+          fi
+          
+          # 3. Fallback to current system date
+          if [ -z "$DATE_STR" ]; then
+            DATE_STR=$(date +%Y-%m-%d)
+          fi
+          
           echo "date=$DATE_STR" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
