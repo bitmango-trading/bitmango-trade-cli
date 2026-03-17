@@ -88,17 +88,30 @@ jobs:
       - name: Set up Python 3.12
         run: uv python install 3.12
 
+      - name: Create Virtual Environment
+        run: |
+          uv venv
+          # Set VIRTUAL_ENV for uv and maturin
+          echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/.venv" >> $GITHUB_ENV
+          # Add venv bin/Scripts to path for all subsequent steps
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            echo "$GITHUB_WORKSPACE/.venv/Scripts" >> $GITHUB_PATH
+          else
+            echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
+          fi
+        shell: bash
+
       - name: Install dependencies
         run: |
-          uv pip install --system maturin nuitka
-          if [ -f "requirements.txt" ]; then uv pip install --system -r requirements.txt; fi
+          uv pip install maturin nuitka
+          if [ -f "requirements.txt" ]; then uv pip install -r requirements.txt; fi
         shell: bash
 
       - name: Build and Install Rust modules
         run: |
-          # Use maturin build + uv pip install for better reliability in CI
+          # Use maturin build + uv pip install
           maturin build --release --out dist
-          uv pip install --system dist/*.whl
+          uv pip install dist/*.whl
         shell: bash
 
       - name: Run Nuitka Build
@@ -106,21 +119,21 @@ jobs:
           # Note: If build.py does not exist, we use a standard Nuitka command 
           # to compile the entry points into standalone binaries.
           if [ -f "build.py" ]; then
-            uv run python build.py
+            python build.py
           else
             # Compile core binaries using Nuitka standalone mode
             # bitmango
-            uv run python -m nuitka --standalone --onefile \
+            python -m nuitka --standalone --onefile \
               --output-filename=bitmango${{ matrix.suffix }} \
               bitmango-free/bin/bitmango
             
             # bitmango-vault
-            uv run python -m nuitka --standalone --onefile \
+            python -m nuitka --standalone --onefile \
               --output-filename=bitmango-vault${{ matrix.suffix }} \
               bitmango-free/bin/bitmango-vault
             
             # bitmango-help
-            uv run python -m nuitka --standalone --onefile \
+            python -m nuitka --standalone --onefile \
               --output-filename=bitmango-help${{ matrix.suffix }} \
               bitmango-free/bin/bitmango-help
           fi
