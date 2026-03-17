@@ -109,8 +109,10 @@ jobs:
 
       - name: Build and Install Rust modules
         run: |
-          # Use maturin build + uv pip install
-          maturin build --release --out dist
+          # Maturin must run in the directory containing the crate to be built
+          cd bitmango-pro/bitmango-pro-core
+          maturin build --release --out ../../dist
+          cd ../../
           uv pip install dist/*.whl
         shell: bash
 
