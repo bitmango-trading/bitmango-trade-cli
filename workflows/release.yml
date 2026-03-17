@@ -103,7 +103,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install maturin nuitka
+          uv pip install maturin nuitka zstandard
           if [ -f "requirements.txt" ]; then uv pip install -r requirements.txt; fi
         shell: bash
 
@@ -125,17 +125,17 @@ jobs:
           else
             # Compile core binaries using Nuitka standalone mode
             # bitmango
-            python -m nuitka --standalone --onefile \
+            python -m nuitka --standalone --onefile --assume-yes-for-downloads \
               --output-filename=bitmango${{ matrix.suffix }} \
               bitmango-free/bin/bitmango
             
             # bitmango-vault
-            python -m nuitka --standalone --onefile \
+            python -m nuitka --standalone --onefile --assume-yes-for-downloads \
               --output-filename=bitmango-vault${{ matrix.suffix }} \
               bitmango-free/bin/bitmango-vault
             
             # bitmango-help
-            python -m nuitka --standalone --onefile \
+            python -m nuitka --standalone --onefile --assume-yes-for-downloads \
               --output-filename=bitmango-help${{ matrix.suffix }} \
               bitmango-free/bin/bitmango-help
           fi
