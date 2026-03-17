@@ -90,15 +90,15 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install maturin nuitka
-          if [ -f "requirements.txt" ]; then uv pip install -r requirements.txt; fi
+          uv pip install --system maturin nuitka
+          if [ -f "requirements.txt" ]; then uv pip install --system -r requirements.txt; fi
         shell: bash
 
       - name: Build and Install Rust modules
         run: |
           # Use maturin build + uv pip install for better reliability in CI
           maturin build --release --out dist
-          uv pip install dist/*.whl
+          uv pip install --system dist/*.whl
         shell: bash
 
       - name: Run Nuitka Build
