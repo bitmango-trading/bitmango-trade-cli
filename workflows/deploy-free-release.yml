@@ -92,7 +92,7 @@ jobs:
           # Create Release using the new ZIPs via tag push and release creation
           # The ZIP files were created in the parent directory of dist_release
           cd ..
-          gh release create ${{ github.event.inputs.version }} \
+          ls -l *.zip; gh release create ${{ github.event.inputs.version }} \
             --repo bitmango-trading/bitmango-trade-cli \
             --title "Release ${{ github.event.inputs.version }}" \
             --notes-file docs/changelogs/${{ github.event.inputs.version }}.md \
