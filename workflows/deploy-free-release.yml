@@ -66,7 +66,7 @@ jobs:
           cd dist_release
           # Loop through each platform directory
           for platform_dir in *; do
-            if [ -d "$platform_dir" ]; then
+            if [ -d "$platform_dir" ] && [ "$platform_dir" != "source" ]; then
               echo "Packaging Binaries-Only: $platform_dir..."
               cp -t "$platform_dir/" ../LICENSE ../README.md 2>/dev/null || true
               zip -r "../bitmango-free-${{ github.event.inputs.version }}-$platform_dir-binaries.zip" "$platform_dir"
