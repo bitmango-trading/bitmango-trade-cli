@@ -27,7 +27,7 @@ jobs:
           mkdir -p build_tmp
           for entry in bitmango bitmango-vault bitmango-help; do
             cp "bitmango-free/bin/$entry" "build_tmp/$entry.py"
-            nuitka --standalone --onefile --no-deployment-check --output-filename="$entry${{ matrix.suffix }}" "build_tmp/$entry.py"
+            nuitka --quiet --standalone --onefile --no-deployment-check --output-filename="$entry${{ matrix.suffix }}" "build_tmp/$entry.py"
             mv "$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || mv "$entry.dist/$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || true
           done
       - uses: actions/upload-artifact@v4
