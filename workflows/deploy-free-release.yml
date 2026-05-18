@@ -35,7 +35,7 @@ jobs:
               echo "Packaging $platform_name..."
               # Binaries-Only
               cp -t "$platform/" "$BASE_DIR/LICENSE" "$BASE_DIR/README.md" 2>/dev/null || true
-              zip -r "$BASE_DIR/bitmango-free-$VERSION-$platform_name-binaries.zip" "$platform_name"; ls -l "$BASE_DIR/bitmango-free-$VERSION-$platform_name-binaries.zip"
+              zip -rv "$BASE_DIR/bitmango-free-$VERSION-$platform_name-binaries.zip" "$platform_name"; ls -l "$platform"
               # Full-Source
               source_staging="$BASE_DIR/full-source-$platform_name"
               mkdir -p "$source_staging/binaries"
@@ -43,7 +43,7 @@ jobs:
               cp -r "$platform/"* "$source_staging/binaries/"
               cp "$BASE_DIR/LICENSE" "$BASE_DIR/README.md" "$source_staging/" 2>/dev/null || true
               cd "$source_staging"
-              zip -r "$BASE_DIR/bitmango-free-$VERSION-$platform_name-full.zip" .
+              zip -rv "$BASE_DIR/bitmango-free-$VERSION-$platform_name-full.zip" .
               cd "$BASE_DIR"
             fi
           done
