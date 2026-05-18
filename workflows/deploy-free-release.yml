@@ -24,7 +24,7 @@ jobs:
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_DEPLOY_KEY }}
+          ssh-private-key: ${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}
 
       - name: Check Repository Access
         run: |
