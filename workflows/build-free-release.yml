@@ -6,6 +6,11 @@ on:
       version:
         description: 'Version Tag (e.g. 2026-05-18)'
         required: true
+      force:
+        description: 'Delete existing release branch if it exists?'
+        required: false
+        default: 'false'
+        type: boolean
 
 permissions:
   contents: write
@@ -65,6 +70,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           BRANCH_NAME="releases-${{ github.event.inputs.version }}"
+          
+          if [[ "${{ github.event.inputs.force }}" == "true" ]]; then
+            echo "Force flag detected. Deleting existing branch if present."
+            git push origin --delete $BRANCH_NAME || true
+            git branch -D $BRANCH_NAME || true
+          fi
+          
           if git show-ref --verify --quiet refs/heads/$BRANCH_NAME; then
             echo "Branch $BRANCH_NAME already exists, checking out..."
             git checkout $BRANCH_NAME
