@@ -9,7 +9,6 @@ jobs:
       matrix:
         include:
           - {os: ubuntu-latest, platform: linux, suffix: ""}
-          - {os: windows-latest, platform: windows, suffix: ".exe"}
           - {os: macos-latest, platform: macos, suffix: ""}
     runs-on: ${{ matrix.os }}
     steps:
