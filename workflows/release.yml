@@ -18,11 +18,10 @@ permissions:
   contents: write
 
 jobs:
-  # Job 1: Create the GitHub Release
-  create-release:
+  # Job 1: Check for changelog
+  check-changelog:
     runs-on: ubuntu-latest
     outputs:
-      release_id: ${{ steps.create_release.outputs.id }}
       date_str: ${{ steps.get_date.outputs.date }}
     steps:
       - name: Checkout code
@@ -31,33 +30,46 @@ jobs:
       - name: Extract date from branch name
         id: get_date
         run: |
-          # 1. Check manual input
           DATE_STR="${{ github.event.inputs.version }}"
-          
-          # 2. If empty, try branch name (releases-YYYY-MM-DD)
           if [ -z "$DATE_STR" ]; then
             BRANCH_NAME="${GITHUB_REF#refs/heads/}"
             if [[ "$BRANCH_NAME" == releases-* ]]; then
               DATE_STR="${BRANCH_NAME#releases-}"
             fi
           fi
-          
-          # 3. Fallback to current system date
-          if [ -z "$DATE_STR" ]; then
-            DATE_STR=$(date +%Y-%m-%d)
-          fi
-          
+          if [ -z "$DATE_STR" ]; then DATE_STR=$(date +%Y-%m-%d); fi
           echo "date=$DATE_STR" >> $GITHUB_OUTPUT
+
+      - name: Validate Changelog
+        run: |
+          FILE="docs/changelogs/${{ steps.get_date.outputs.date }}.md"
+          if [ ! -f "$FILE" ]; then
+            echo "❌ Error: Changelog file $FILE not found."
+            exit 1
+          fi
+          echo "✅ Changelog found: $FILE"
+
+  # Job 2: Create the GitHub Release
+  create-release:
+    needs: check-changelog
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create_release.outputs.id }}
+      date_str: ${{ needs.check-changelog.outputs.date_str }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Create GitHub Release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release ${{ steps.get_date.outputs.date }}
-          tag_name: ${{ steps.get_date.outputs.date }}
+          repository: bitmango-trading/bitmango-trade-cli
+          name: Release ${{ needs.check-changelog.outputs.date_str }}
+          tag_name: ${{ needs.check-changelog.outputs.date_str }}
+          body_path: docs/changelogs/${{ needs.check-changelog.outputs.date_str }}.md
           draft: false
           prerelease: false
-          generate_release_notes: true
 
   # Job 2: Multi-platform Matrix Build
   build:
