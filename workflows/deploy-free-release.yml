@@ -3,8 +3,8 @@ name: Deploy Bitmango Free Release
 on:
   workflow_dispatch:
     inputs:
-      run_id:
-        description: 'The Run ID of the successful build'
+      branch:
+        description: 'Release Branch (e.g. releases-2026-05-18)'
         required: true
       version:
         description: 'Version Tag (e.g. 2026-05-18)'
@@ -14,12 +14,26 @@ jobs:
   promote:
     runs-on: ubuntu-latest
     steps:
+      - name: Get Latest Successful Build ID
+        id: get-build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Fetch the ID of the latest successful build for the specific release branch
+          RUN_ID=$(gh run list --workflow build-free-release.yml --branch "${{ github.event.inputs.branch }}" --status success --limit 1 --json databaseId -q '.[0].databaseId')
+          if [ -z "$RUN_ID" ] || [ "$RUN_ID" == "null" ]; then
+            echo "❌ No successful build found for branch ${{ github.event.inputs.branch }}"
+            exit 1
+          fi
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+          echo "Targeting Run ID: $RUN_ID"
+
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          run-id: ${{ github.event.inputs.run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ steps.get-build.outputs.run_id }}
           path: artifacts/
+
       - name: Create Release in Prod Repo
         uses: softprops/action-gh-release@v2
         with:
