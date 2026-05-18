@@ -64,9 +64,18 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Stage artifacts
           git add dist_release/
-          git commit -m "chore: add pro binaries for release ${{ github.event.inputs.version }}" || echo "No changes to commit"
-          git pull --rebase origin releases-${{ github.event.inputs.version }}-pro && git push origin HEAD:releases-${{ github.event.inputs.version }}-pro
+          
+          # Commit and push with rebase
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: add pro binaries for release ${{ github.event.inputs.version }}"
+            git pull --rebase origin releases-${{ github.event.inputs.version }}-pro
+            git push origin HEAD:releases-${{ github.event.inputs.version }}-pro
+          else
+            echo "No changes to commit"
+          fi
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
