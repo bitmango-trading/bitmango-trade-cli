@@ -9,6 +9,7 @@ jobs:
       matrix:
         include:
           - {os: ubuntu-latest, platform: linux, suffix: ""}
+          - {os: windows-latest, platform: windows, suffix: ".exe"}
           - {os: macos-latest, platform: macos, suffix: ""}
     runs-on: ${{ matrix.os }}
     steps:
@@ -18,15 +19,17 @@ jobs:
       - name: Build
         shell: bash
         run: |
+          # Use the environment-specific paths for activation
+          if [ -d venv ]; then rm -rf venv; fi
           python -m venv venv
           if [ -f "venv/Scripts/activate" ]; then . venv/Scripts/activate; else . venv/bin/activate; fi
-          uv pip install nuitka zstandard
-          [ -f "requirements.txt" ] && uv pip install -r requirements.txt
+          ./venv/bin/uv pip install nuitka zstandard || ./venv/Scripts/uv pip install nuitka zstandard
+          [ -f "requirements.txt" ] && (./venv/bin/uv pip install -r requirements.txt || ./venv/Scripts/uv pip install -r requirements.txt)
           mkdir -p "bin_outputs/${{ matrix.platform }}"
           mkdir -p build_tmp
           for entry in bitmango bitmango-vault bitmango-help; do
             cp "bitmango-free/bin/$entry" "build_tmp/$entry.py"
-            nuitka --standalone --onefile --output-filename="$entry${{ matrix.suffix }}" "build_tmp/$entry.py"
+            python -m nuitka --standalone --onefile --output-filename="$entry${{ matrix.suffix }}" "build_tmp/$entry.py"
             mv "$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || mv "$entry.dist/$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || true
           done
       - uses: actions/upload-artifact@v4
