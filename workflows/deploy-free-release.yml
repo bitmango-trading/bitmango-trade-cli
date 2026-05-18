@@ -1,9 +1,10 @@
-name: Promote to Production
+name: Deploy Bitmango Free Release
+
 on:
   workflow_dispatch:
     inputs:
       run_id:
-        description: 'The Run ID of the successful build in this repo'
+        description: 'The Run ID of the successful build'
         required: true
       version:
         description: 'Version Tag (e.g. 2026-05-18)'
