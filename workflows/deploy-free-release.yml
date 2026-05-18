@@ -37,7 +37,7 @@ jobs:
           ls -l ..
       - name: Release
         run: |
-          gh release create ${{ github.event.inputs.version }} \
+          find . -name "*.zip" -ls; gh release create ${{ github.event.inputs.version }} \
             --repo bitmango-trading/bitmango-trade-cli \
             --title "Release ${{ github.event.inputs.version }}" \
             --notes-file docs/changelogs/${{ github.event.inputs.version }}.md \
