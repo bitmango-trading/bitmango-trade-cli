@@ -64,7 +64,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.BITMANGO_TRADE_CLI_PAT }}
+          token: ${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}
           repository: bitmango-trading/bitmango-trade-cli
           name: Release ${{ needs.check-changelog.outputs.date_str }}
           tag_name: ${{ needs.check-changelog.outputs.date_str }}
