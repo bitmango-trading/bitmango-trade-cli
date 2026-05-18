@@ -35,21 +35,23 @@ jobs:
             exit 1
           fi
           
-          # 3. Whitelist Check (Strictly for bitmango-free folder)
-          if [ ! -f "bitmango-free/.whitelist" ]; then
-            echo "❌ Error: bitmango-free/.whitelist file missing."
+          # 3. Whitelist Check (Strictly for root)
+          if [ ! -f ".whitelist" ]; then
+            echo "❌ Error: .whitelist file missing."
             exit 1
           fi
           
-          # Find all files in bitmango-free and compare against its internal whitelist
+          # Find all files in root and compare against its internal whitelist
           # Supports whitelist lines and exclusion lines (starting with !)
-          UNAUTHORIZED_FILES=$(find bitmango-free -type f | while read file; do
+          UNAUTHORIZED_FILES=$(find . -type f -not -path "./.git/*" -not -path "./dist_release/*" | while read file; do
+            # Remove leading ./
+            file=${file#./}
             # Check if file is explicitly ignored (starts with !)
-            if grep -q "^!${file}$" bitmango-free/.whitelist; then
+            if grep -q "^!${file}$" .whitelist; then
               echo "$file"
             # Check if file is NOT in the whitelist (and not ignored)
             # Skip whitelist check for the whitelist file itself
-            elif [[ "$file" != "bitmango-free/.whitelist" ]] && ! grep -q "^${file}$" bitmango-free/.whitelist; then
+            elif [[ "$file" != ".whitelist" ]] && ! grep -q "^${file}$" .whitelist; then
               echo "$file"
             fi
           done)
