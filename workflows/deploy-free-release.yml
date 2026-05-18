@@ -35,14 +35,20 @@ jobs:
             exit 1
           fi
           
-          # 3. Security Sanity Check (no logs/secrets)
-          if [ "$(find . -name '*.log' -o -name '.env' -o -name 'api_keys.py' -o -name '*.secret')" ]; then
-            echo "❌ Error: Found sensitive files (logs, .env, api_keys, etc.) in the release branch."
+          # 3. Whitelist Check
+          # Define authorized files/patterns
+          ALLOWED_FILES="^(\./docs/.*|\./dist_release/.*|\./docs/changelogs/.*|\./README.md|\./LICENSE|\./NOTICE.txt|\./SECURITY.md|\./requirements.txt|\./pyproject.toml|\./uv.lock|\./bitmango-free/.*)$"
+          
+          # Find all files except .git and compare against whitelist
+          UNAUTHORIZED_FILES=$(find . -not -path '*/.*' -not -path '.' | grep -vE "$ALLOWED_FILES")
+          
+          if [ -n "$UNAUTHORIZED_FILES" ]; then
+            echo "❌ ERROR: These files are not whitelisted:"
+            echo "$UNAUTHORIZED_FILES"
             exit 1
           fi
           
-          # 4. Pattern-based secret scanning
-          # Patterns for common API keys/secrets
+          # 4. Pattern-based secret scanning (defense in depth)
           PATTERNS="AIza[0-9A-Za-z-_]{35}|ghp_[0-9a-zA-Z]{36}|xox[baprs]-[0-9a-zA-Z]{10,}"
           if grep -rEi "$PATTERNS" . --exclude-dir=.git --exclude-dir=dist_release; then
              echo "❌ Error: Potential secrets found in release branch content."
