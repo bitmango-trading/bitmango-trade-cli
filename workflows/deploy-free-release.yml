@@ -46,12 +46,14 @@ jobs:
           UNAUTHORIZED_FILES=$(find . -type f -not -path "./.git/*" -not -path "./dist_release/*" | while read file; do
             # Remove leading ./
             file=${file#./}
+            # Skip the .whitelist file itself in the unauthorized list
+            [[ "$file" == ".whitelist" ]] && continue
+            
             # Check if file is explicitly ignored (starts with !)
             if grep -q "^!${file}$" .whitelist; then
               echo "$file"
             # Check if file is NOT in the whitelist (and not ignored)
-            # Skip whitelist check for the whitelist file itself
-            elif [[ "$file" != ".whitelist" ]] && ! grep -q "^${file}$" .whitelist; then
+            elif ! grep -q "^${file}$" .whitelist; then
               echo "$file"
             fi
           done)
