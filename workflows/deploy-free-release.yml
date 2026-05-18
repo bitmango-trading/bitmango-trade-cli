@@ -32,7 +32,7 @@ jobs:
           for platform in "$DIST_DIR"/*; do
             if [ -d "$platform" ] && [ "$(basename "$platform")" != "source" ]; then
               platform_name=$(basename "$platform")
-              echo "Packaging $platform_name... PWD=$(pwd) DIST_DIR=$DIST_DIR"; ls -R "$DIST_DIR"
+              echo "DEBUG: DIST_DIR is $DIST_DIR"; echo "Content: "; ls -l $DIST_DIR; echo "Packaging $platform_name..."; ls -l "$DIST_DIR"
               # Binaries-Only
               cp -t "$platform/" "$BASE_DIR/LICENSE" "$BASE_DIR/README.md" 2>/dev/null || true
               zip -rv "$BASE_DIR/bitmango-free-$VERSION-$platform_name-binaries.zip" "$platform_name"; ls -l "$platform"
