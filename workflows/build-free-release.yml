@@ -21,8 +21,12 @@ jobs:
             [[ -z "$file" || "$file" =~ ^# || "$file" == ".whitelist" ]] && continue
             
             # The files are listed in .whitelist relative to the bitmango-free/ dir, 
-            # so we prepend bitmango-free/
-            path="bitmango-free/$file"
+            # so we check if the path already includes the prefix, otherwise prepend it.
+            if [[ "$file" == bitmango-free/* ]]; then
+                path="$file"
+            else
+                path="bitmango-free/$file"
+            fi
             
             if [ ! -e "$path" ]; then
               echo "Error: Required asset '$path' not found."
