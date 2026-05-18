@@ -46,7 +46,7 @@ jobs:
             python -m nuitka --standalone --onefile --assume-yes-for-downloads \
               --output-filename=$entry${{ matrix.suffix }} \
               --jobs=2 \
-              bitmango-free/bin/$entry
+              bin/$entry
           done
           
           # Move binaries to a platform-specific directory
