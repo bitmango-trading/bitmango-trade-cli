@@ -14,17 +14,17 @@ jobs:
         with: {ref: "${{ github.event.inputs.branch }}"}
       - uses: webfactory/ssh-agent@v0.9.0
         with: {ssh-private-key: "${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}"}
-      - name: Debug
-        run: ls -R
       - name: Package
         run: |
+          set -x
           VERSION="${{ github.event.inputs.version }}"
           cd dist_release
           for platform in *; do
             if [ -d "$platform" ] && [ "$platform" != "source" ]; then
-              echo "Packaging $platform..."
+              # Binaries-Only
               cp -t "$platform/" ../LICENSE ../README.md 2>/dev/null || true
               zip -r "../bitmango-free-$VERSION-$platform-binaries.zip" "$platform"
+              # Full-Source
               mkdir -p "../full-source-$platform/binaries"
               cp -r source/* "../full-source-$platform/"
               cp -r "$platform/"* "../full-source-$platform/binaries/"
@@ -37,10 +37,10 @@ jobs:
           ls -l ..
       - name: Release
         run: |
-          find . -name "*.zip" -ls; gh release create ${{ github.event.inputs.version }} \
+          gh release create ${{ github.event.inputs.version }} \
             --repo bitmango-trading/bitmango-trade-cli \
             --title "Release ${{ github.event.inputs.version }}" \
             --notes-file docs/changelogs/${{ github.event.inputs.version }}.md \
-            ../*.zip
+            bitmango-free-*.zip
         env:
           GH_TOKEN: "${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}"
