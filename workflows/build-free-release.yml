@@ -17,13 +17,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify assets from whitelist
         run: |
-          pwd
-          ls -F
           while IFS= read -r file; do
             [[ -z "$file" || "$file" =~ ^# || "$file" == ".whitelist" ]] && continue
-            if [ ! -e "$file" ]; then
-              echo "Error: Required asset '$file' from .whitelist not found."
-              ls -F "$(dirname "$file")"
+            
+            # The files are listed in .whitelist relative to the bitmango-free/ dir, 
+            # so we prepend bitmango-free/
+            path="bitmango-free/$file"
+            
+            if [ ! -e "$path" ]; then
+              echo "Error: Required asset '$path' not found."
               exit 1
             fi
           done < "bitmango-free/.whitelist"
