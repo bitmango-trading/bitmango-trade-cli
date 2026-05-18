@@ -64,8 +64,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b releases-${{ github.event.inputs.version }}
-          git push origin releases-${{ github.event.inputs.version }}
+          BRANCH_NAME="releases-${{ github.event.inputs.version }}"
+          if git show-ref --verify --quiet refs/heads/$BRANCH_NAME; then
+            echo "Branch $BRANCH_NAME already exists, checking out..."
+            git checkout $BRANCH_NAME
+          else
+            git checkout -b $BRANCH_NAME
+          fi
+          git push origin $BRANCH_NAME
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
