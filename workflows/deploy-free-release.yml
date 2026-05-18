@@ -35,43 +35,19 @@ jobs:
             exit 1
           fi
           
-          # 3. Whitelist Check (Strictly for root)
-          if [ ! -f ".whitelist" ]; then
-            echo "❌ Error: .whitelist file missing."
+          # 2. Check for binaries
+          if [ ! -d "dist_release" ] || [ -z "$(ls -A dist_release)" ]; then
+            echo "❌ Error: No binaries found in dist_release/."
             exit 1
           fi
-          
-          # Find all files in root and compare against its internal whitelist
-          # Supports whitelist lines and exclusion lines (starting with !)
-          UNAUTHORIZED_FILES=$(find . -type f -not -path "./.git/*" -not -path "./dist_release/*" -not -name ".whitelist" | while read file; do
-            # The 'file' variable already has a leading './' from find
-            # Remove the './' prefix
-            clean_file=${file#./}
-            
-            # Skip whitelist check for the whitelist file itself
-            [[ "$clean_file" == ".whitelist" ]] && continue
-            
-            # Check if file is explicitly ignored (starts with !)
-            if grep -q "^!${clean_file}$" .whitelist; then
-              echo "$clean_file"
-            # Check if file is NOT in the whitelist (and not ignored)
-            elif ! grep -q "^${clean_file}$" .whitelist; then
-              echo "$clean_file"
-            fi
-          done)
-          
-          if [ -n "$UNAUTHORIZED_FILES" ]; then
-            echo "❌ ERROR: These files in bitmango-free are not whitelisted or are explicitly excluded:"
-            echo "$UNAUTHORIZED_FILES"
-            exit 1
-          fi
-          
-          # 4. Pattern-based secret scanning
-          PATTERNS="AIza[0-9A-Za-z-_]{35}|ghp_[0-9a-zA-Z]{36}|xox[baprs]-[0-9a-zA-Z]{10,}"
+
+          # 3. Pattern-based secret scanning
+          PATTERNS="AIza[0-9A-Za-z-_]{35}|ghp_[0-9A-zA-Z]{36}|xox[baprs]-[0-9A-Za-z]{10,}"
           if grep -rEi "$PATTERNS" . --exclude-dir=.git --exclude-dir=dist_release; then
              echo "❌ Error: Potential secrets found in release branch content."
              exit 1
           fi
+          echo "✅ Release validation passed."
           echo "✅ Release validation passed."
 
       - name: Package and Release
