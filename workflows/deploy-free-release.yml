@@ -21,7 +21,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}
       - name: Debug
-        run: git branch; ls -R
+        run: git rev-parse --abbrev-ref HEAD; ls -R
       - name: Check Access
         run: git ls-remote git@github.com:bitmango-trading/bitmango-trade-cli.git HEAD
       - name: Validate
