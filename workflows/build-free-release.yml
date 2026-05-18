@@ -15,19 +15,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify entry points
+      - name: Verify assets from whitelist
         run: |
-          for entry in bitmango bitmango-vault bitmango-help; do
-            if [ ! -f "bitmango-free/bin/$entry" ]; then
-              echo "Error: Entry point $entry not found in bitmango-free/bin/"
+          while IFS= read -r file; do
+            [[ -z "$file" || "$file" =~ ^# ]] && continue
+            if [ ! -e "$file" ]; then
+              echo "Error: Required asset '$file' from .whitelist not found."
               exit 1
             fi
-          done
-          if [ ! -d "bitmango-cli" ]; then
-            echo "Error: bitmango-cli source directory not found"
-            exit 1
-          fi
-          echo "All entry points and source directories verified."
+          done < "bitmango-free/.whitelist"
+          echo "All assets verified."
 
   build:
     needs: pre-flight
