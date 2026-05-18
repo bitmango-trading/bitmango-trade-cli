@@ -69,12 +69,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin
           BRANCH_NAME="releases-${{ github.event.inputs.version }}"
           
-          if git show-ref --verify --quiet refs/heads/$BRANCH_NAME; then
+          if git show-ref --verify --quiet refs/remotes/origin/$BRANCH_NAME; then
             if [[ "${{ github.event.inputs.force }}" == "true" ]]; then
               echo "Force flag detected. Deleting existing branch."
-              git push origin --delete $BRANCH_NAME || true
+              git push origin --delete $BRANCH_NAME
               git branch -D $BRANCH_NAME || true
             else
               echo "❌ Error: Branch $BRANCH_NAME already exists and force is not set to true."
