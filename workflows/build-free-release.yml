@@ -19,9 +19,8 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          if [ -f "$HOME/.cargo/env" ]; then source "$HOME/.cargo/env"; fi
-          uv venv venv
-          source venv/bin/activate || source venv/Scripts/activate
+          python -m venv venv
+          if [ -f "venv/Scripts/activate" ]; then . venv/Scripts/activate; else . venv/bin/activate; fi
           uv pip install nuitka zstandard
           [ -f "requirements.txt" ] && uv pip install -r requirements.txt
           mkdir -p "bin_outputs/${{ matrix.platform }}"
