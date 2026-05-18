@@ -21,12 +21,16 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch }}
 
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_DEPLOY_KEY }}
+
       - name: Check Repository Access
         run: |
-          gh repo view bitmango-trading/bitmango-trade-cli > /dev/null
-          echo "✅ Access to target repository verified."
-        env:
-          GH_TOKEN: ${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}
+          # Use git to verify SSH access to the target repo
+          git ls-remote git@github.com:bitmango-trading/bitmango-trade-cli.git HEAD
+          echo "✅ Access to target repository verified via SSH."
 
       - name: Validate Release Branch
         run: |
@@ -63,14 +67,11 @@ jobs:
           # Loop through each platform directory
           for platform_dir in *; do
             if [ -d "$platform_dir" ]; then
-              # 1. Binaries-Only ZIP: Files in platform_dir + Root Metadata
               echo "Packaging Binaries-Only: $platform_dir..."
               cp -t "$platform_dir/" ../LICENSE ../README.md 2>/dev/null || true
               zip -r "../bitmango-free-${{ github.event.inputs.version }}-$platform_dir-binaries.zip" "$platform_dir"
 
-              # 2. Full-Source ZIP: Source files in root, Binaries in 'binaries/'
               echo "Packaging Full-Source: $platform_dir..."
-              # Create staging for source zip to avoid mutating original
               mkdir -p "../full-source-$platform_dir"
               cp -r source/* "../full-source-$platform_dir/"
               mkdir -p "../full-source-$platform_dir/binaries"
@@ -83,7 +84,14 @@ jobs:
             fi
           done
 
-          # Create Release on target repo using the new ZIPs
+          # Use SSH for git operations
+          git config --global user.email "deploy@bitmango.com"
+          git config --global user.name "BitMango Deployer"
+          git remote add target git@github.com:bitmango-trading/bitmango-trade-cli.git
+          
+          # Create Release using the new ZIPs via tag push and release creation
+          # Note: We continue to use GH_TOKEN for release creation if needed, 
+          # but we have verified access via SSH.
           gh release create ${{ github.event.inputs.version }} \
             --repo bitmango-trading/bitmango-trade-cli \
             --title "Release ${{ github.event.inputs.version }}" \
