@@ -1,6 +1,11 @@
 name: Build Bitmango Free Release
 
-on: [push]
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version Tag (e.g. 2026-05-18)'
+        required: true
 
 jobs:
   build:
