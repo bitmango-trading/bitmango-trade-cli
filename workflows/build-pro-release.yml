@@ -18,7 +18,7 @@ jobs:
       - name: Verify assets from whitelist
         run: |
           while IFS= read -r file; do
-            [[ -z "$file" || "$file" =~ ^# ]] && continue
+            [[ -z "$file" || "$file" =~ ^# || "$file" == ".whitelist-pro" ]] && continue
             if [ ! -e "$file" ]; then
               echo "Error: Required asset '$file' from .whitelist-pro not found."
               exit 1
