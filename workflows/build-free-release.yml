@@ -19,19 +19,29 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Build (Nuitka/Rust)
+      - name: Install dependencies
         shell: bash
         run: |
-            mkdir -p dist_release
-            if [ -f "bitmango-free/bin/bitmango" ]; then
-                cp bitmango-free/bin/bitmango dist_release/bitmango${{ matrix.suffix }}
-                cp bitmango-free/bin/bitmango-vault dist_release/bitmango-vault${{ matrix.suffix }}
-                cp bitmango-free/bin/bitmango-help dist_release/bitmango-help${{ matrix.suffix }}
-            else
-                touch dist_release/bitmango${{ matrix.suffix }}
-                touch dist_release/bitmango-vault${{ matrix.suffix }}
-                touch dist_release/bitmango-help${{ matrix.suffix }}
-            fi
+          pip install nuitka zstandard
+          if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+
+      - name: Build Standalone Binaries (Nuitka)
+        shell: bash
+        run: |
+          mkdir -p dist_release
+          
+          # Build each entry point
+          for entry in bitmango bitmango-vault bitmango-help; do
+            python -m nuitka --standalone --onefile --assume-yes-for-downloads \
+              --output-filename=$entry${{ matrix.suffix }} \
+              bitmango-free/bin/$entry
+          done
+          
+          mv *${{ matrix.suffix }} dist_release/
+          
+          # Add release metadata
+          if [ -f "LICENSE" ]; then cp LICENSE dist_release/; fi
+          if [ -f "README.md" ]; then cp README.md dist_release/; fi
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
