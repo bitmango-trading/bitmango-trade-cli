@@ -42,7 +42,10 @@ jobs:
               bitmango-free/bin/$entry
           done
           
-          mv *${{ matrix.suffix }} dist_release/
+          # Move built files explicitly
+          mv bitmango${{ matrix.suffix }} dist_release/ 2>/dev/null || true
+          mv bitmango-vault${{ matrix.suffix }} dist_release/ 2>/dev/null || true
+          mv bitmango-help${{ matrix.suffix }} dist_release/ 2>/dev/null || true
           
           # Add release metadata
           if [ -f "LICENSE" ]; then cp LICENSE dist_release/; fi
