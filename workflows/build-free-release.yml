@@ -107,7 +107,28 @@ jobs:
         with:
           path: dist_release/
           pattern: binaries-${{ github.event.inputs.version }}-*
-          merge-multiple: true
+          merge-multiple: false
+
+      - name: Organize binaries
+        run: |
+          # The download-artifact with merge-multiple: false creates:
+          # dist_release/binaries-VERSION-linux/bitmango
+          # dist_release/binaries-VERSION-windows/bitmango.exe
+          # We move these into clean platform subfolders under dist_release/
+          mkdir -p dist_release/linux dist_release/windows dist_release/macos
+          
+          if [ -d "dist_release/binaries-${{ github.event.inputs.version }}-linux" ]; then
+            mv dist_release/binaries-${{ github.event.inputs.version }}-linux/* dist_release/linux/
+            rmdir dist_release/binaries-${{ github.event.inputs.version }}-linux
+          fi
+          if [ -d "dist_release/binaries-${{ github.event.inputs.version }}-windows" ]; then
+            mv dist_release/binaries-${{ github.event.inputs.version }}-windows/* dist_release/windows/
+            rmdir dist_release/binaries-${{ github.event.inputs.version }}-windows
+          fi
+          if [ -d "dist_release/binaries-${{ github.event.inputs.version }}-macos" ]; then
+            mv dist_release/binaries-${{ github.event.inputs.version }}-macos/* dist_release/macos/
+            rmdir dist_release/binaries-${{ github.event.inputs.version }}-macos
+          fi
 
       - name: Add metadata
         run: |
