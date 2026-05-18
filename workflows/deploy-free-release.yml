@@ -35,27 +35,26 @@ jobs:
             exit 1
           fi
           
-          # 3. Whitelist Check
-          if [ ! -f ".whitelist" ]; then
-            echo "❌ Error: .whitelist file missing."
+          # 3. Whitelist Check (Strictly for bitmango-free folder)
+          if [ ! -f "bitmango-free/.whitelist" ]; then
+            echo "❌ Error: bitmango-free/.whitelist file missing."
             exit 1
           fi
           
-          # Find all files except .git and compare against whitelist
-          # We use a temporary script to check every file against the patterns in .whitelist
-          UNAUTHORIZED_FILES=$(find . -not -path '*/.*' -not -path '.' | while read file; do
-            if ! grep -q "^${file}$" .whitelist && ! grep -qE "^${file}/" .whitelist; then
+          # Find all files in bitmango-free and compare against its internal whitelist
+          UNAUTHORIZED_FILES=$(find bitmango-free -type f | while read file; do
+            if ! grep -q "^${file}$" bitmango-free/.whitelist; then
               echo "$file"
             fi
           done)
           
           if [ -n "$UNAUTHORIZED_FILES" ]; then
-            echo "❌ ERROR: These files are not whitelisted:"
+            echo "❌ ERROR: These files in bitmango-free are not whitelisted:"
             echo "$UNAUTHORIZED_FILES"
             exit 1
           fi
           
-          # 4. Pattern-based secret scanning (defense in depth)
+          # 4. Pattern-based secret scanning
           PATTERNS="AIza[0-9A-Za-z-_]{35}|ghp_[0-9a-zA-Z]{36}|xox[baprs]-[0-9a-zA-Z]{10,}"
           if grep -rEi "$PATTERNS" . --exclude-dir=.git --exclude-dir=dist_release; then
              echo "❌ Error: Potential secrets found in release branch content."
