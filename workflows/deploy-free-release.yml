@@ -70,25 +70,26 @@ jobs:
       - name: Package and Release
         run: |
           cd dist_release
-          # Loop through each platform directory (linux, windows, macos)
+          # Loop through each platform directory
           for platform_dir in *; do
             if [ -d "$platform_dir" ]; then
-              # 1. Binaries-Only ZIP: Binaries, License, Installer at root
+              # 1. Binaries-Only ZIP: Files in platform_dir + Root Metadata
               echo "Packaging Binaries-Only: $platform_dir..."
-              # Copy metadata to the platform dir for packaging
-              if [ -f "../LICENSE" ]; then cp "../LICENSE" "$platform_dir/"; fi
-              # Assuming installers exist in scripts/ or similar - adjust as needed
-              # cp ../scripts/installers/$platform_dir/* "$platform_dir/" 
-              
+              cp -t "$platform_dir/" ../LICENSE ../README.md 2>/dev/null || true
               zip -r "../bitmango-free-${{ github.event.inputs.version }}-$platform_dir-binaries.zip" "$platform_dir"
 
-              # 2. Full-Source ZIP: Source in root, Binaries in root/binaries/
+              # 2. Full-Source ZIP: Source files in root, Binaries in 'binaries/'
               echo "Packaging Full-Source: $platform_dir..."
-              mkdir -p "$platform_dir/binaries"
-              mv "$platform_dir"/* "$platform_dir/binaries/" || true
-              cp -r source/* "$platform_dir/"
+              # Create staging for source zip to avoid mutating original
+              mkdir -p "../full-source-$platform_dir"
+              cp -r source/* "../full-source-$platform_dir/"
+              mkdir -p "../full-source-$platform_dir/binaries"
+              cp -r "$platform_dir"/* "../full-source-$platform_dir/binaries/"
+              cp ../LICENSE ../README.md "../full-source-$platform_dir/" 2>/dev/null || true
               
-              zip -r "../bitmango-free-${{ github.event.inputs.version }}-$platform_dir-full.zip" "$platform_dir"
+              cd "../full-source-$platform_dir"
+              zip -r "../bitmango-free-${{ github.event.inputs.version }}-$platform_dir-full.zip" .
+              cd ../dist_release
             fi
           done
 
