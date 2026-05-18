@@ -20,13 +20,15 @@ jobs:
           while IFS= read -r file; do
             [[ -z "$file" || "$file" =~ ^# || "$file" == ".whitelist-pro" ]] && continue
             
-            # Check bitmango-pro/ subdir, if not found check root
+            # Check bitmango-pro/ subdir, then root, then scripts/ subdir
             if [ -e "bitmango-pro/$file" ]; then
                 path="bitmango-pro/$file"
             elif [ -e "$file" ]; then
                 path="$file"
+            elif [ -e "scripts/$file" ]; then
+                path="scripts/$file"
             else
-              echo "Error: Required asset '$file' not found in bitmango-pro/ or root."
+              echo "Error: Required asset '$file' not found in bitmango-pro/, root, or scripts/."
               exit 1
             fi
           done < "bitmango-pro/.whitelist-pro"
