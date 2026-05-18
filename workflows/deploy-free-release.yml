@@ -67,22 +67,29 @@ jobs:
           fi
           echo "✅ Release validation passed."
 
-      - name: Push Branch to Production Repo
+      - name: Create Release in Prod Repo
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Configure remote with PAT
-          git remote add prod https://x-access-token:${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}@github.com/bitmango-trading/bitmango-trade-cli.git
-          
-          # Push the specific branch to production
-          git push prod ${{ github.event.inputs.branch }}:${{ github.event.inputs.branch }} --force
-          
-          # Create Release on target repo using the artifacts
+          # Package artifacts into a ZIP file
+          cd artifacts
+          ZIP_NAME="bitmango-free-${{ github.event.inputs.version }}-${{ matrix.platform }}.zip"
+          # Wait, the artifacts are already there from the build run. 
+          # We need to zip the specific artifact folder.
+
+          # Since there are multiple artifacts (one per platform), 
+          # we loop through them and zip them
+          for dir in *; do
+            if [ -d "$dir" ]; then
+              cd "$dir"
+              zip -r "../${dir}.zip" .
+              cd ..
+            fi
+          done
+
+          # Push the zips to production repo
           gh release create ${{ github.event.inputs.version }} \
             --repo bitmango-trading/bitmango-trade-cli \
             --title "Release ${{ github.event.inputs.version }}" \
             --notes-file docs/changelogs/${{ github.event.inputs.version }}.md \
-            dist_release/*
+            *.zip
         env:
           GH_TOKEN: ${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}
