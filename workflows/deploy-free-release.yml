@@ -24,7 +24,7 @@ jobs:
       - name: Validate Release Branch
         run: |
           # 1. Check for changelog
-          if [ ! -f "docs/changelogs/${{ github.event.inputs.version }}.md" ]; then
+          ls -R; if [ ! -f "docs/changelogs/${{ github.event.inputs.version }}.md" ]; then
             echo "❌ Error: Changelog docs/changelogs/${{ github.event.inputs.version }}.md missing."
             exit 1
           fi
