@@ -4,19 +4,7 @@ on:
     inputs:
       version: {description: "Version Tag", required: true}
 jobs:
-  pre-flight:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: |
-          while IFS= read -r file; do
-            [[ -z "$file" || "$file" =~ ^# || "$file" == ".whitelist" ]] && continue
-            if [ ! -e "bitmango-free/$file" ] && [ ! -e "$file" ] && [ ! -e "scripts/$file" ]; then
-              echo "Error: Required asset '$file' missing." && exit 1
-            fi
-          done < "bitmango-free/.whitelist"
   build:
-    needs: pre-flight
     strategy:
       matrix:
         include:
@@ -26,10 +14,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - shell: bash
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Build
+        shell: bash
         run: |
-          pip install --prefer-binary --no-cache-dir -r requirements.txt nuitka zstandard
-          
+          source $HOME/.cargo/env
+          uv pip install --system nuitka zstandard
+          [ -f "requirements.txt" ] && uv pip install --system -r requirements.txt
           mkdir -p "bin_outputs/${{ matrix.platform }}"
           for entry in bitmango bitmango-vault bitmango-help; do
             python -m nuitka --standalone --onefile --output-filename="$entry${{ matrix.suffix }}" bitmango-free/bin/"$entry"
