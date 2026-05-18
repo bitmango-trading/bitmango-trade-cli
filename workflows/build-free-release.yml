@@ -48,9 +48,14 @@ jobs:
           done
           
           # Move built files explicitly
-          mv bitmango${{ matrix.suffix }} dist_release/ 2>/dev/null || true
-          mv bitmango-vault${{ matrix.suffix }} dist_release/ 2>/dev/null || true
-          mv bitmango-help${{ matrix.suffix }} dist_release/ 2>/dev/null || true
+          # Nuitka creates *.dist/ directories. Move the binary from there if it exists.
+          for entry in bitmango bitmango-vault bitmango-help; do
+            if [ -f "$entry.dist/$entry${{ matrix.suffix }}" ]; then
+              mv "$entry.dist/$entry${{ matrix.suffix }}" dist_release/
+            elif [ -f "$entry${{ matrix.suffix }}" ]; then
+              mv "$entry${{ matrix.suffix }}" dist_release/
+            fi
+          done
           
           # Add release metadata
           if [ -f "LICENSE" ]; then cp LICENSE dist_release/; fi
