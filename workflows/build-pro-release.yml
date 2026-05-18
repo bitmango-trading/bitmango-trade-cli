@@ -77,6 +77,10 @@ jobs:
           # Commit and push with rebase
           if ! git diff --cached --quiet; then
             git commit -m "chore: add pro binaries for release ${{ github.event.inputs.version }}"
+            
+            # Ensure the workspace is totally clean of untracked build artifacts that might conflict
+            git clean -fd
+            
             git pull --rebase origin releases-${{ github.event.inputs.version }}-pro
             git push origin HEAD:releases-${{ github.event.inputs.version }}-pro
           else
