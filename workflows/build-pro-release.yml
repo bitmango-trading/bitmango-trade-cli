@@ -1,0 +1,75 @@
+name: Build Bitmango Pro Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version Tag (e.g. 2026-05-18)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            suffix: ""
+          - os: windows-latest
+            platform: windows
+            suffix: ".exe"
+          - os: macos-latest
+            platform: macos
+            suffix: ""
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: releases-${{ github.event.inputs.version }}-pro
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install nuitka zstandard maturin
+          if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+
+      - name: Build Pro Core (Rust)
+        shell: bash
+        run: |
+          cd bitmango-pro/bitmango-pro-core
+          maturin build --release --out ../../dist_release
+          cd ../../
+
+      - name: Build Standalone Binaries (Nuitka)
+        shell: bash
+        run: |
+          mkdir -p dist_release
+          
+          # Build each entry point
+          for entry in bitmango bitmango-vault bitmango-help; do
+            python -m nuitka --standalone --onefile --assume-yes-for-downloads               --output-filename=$entry${{ matrix.suffix }}               --jobs=2               bitmango-free/bin/$entry
+          done
+          
+          # Move built files explicitly
+          mv bitmango${{ matrix.suffix }} dist_release/ 2>/dev/null || true
+          mv bitmango-vault${{ matrix.suffix }} dist_release/ 2>/dev/null || true
+          mv bitmango-help${{ matrix.suffix }} dist_release/ 2>/dev/null || true
+          
+      - name: Commit Pro Binaries to Branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add dist_release/
+          git commit -m "chore: add pro binaries for release ${{ github.event.inputs.version }}" || echo "No changes to commit"
+          git push origin HEAD:releases-${{ github.event.inputs.version }}-pro
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bitmango-pro-binaries-${{ matrix.platform }}
+          path: dist_release/
