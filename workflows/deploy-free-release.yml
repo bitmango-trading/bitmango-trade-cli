@@ -15,36 +15,32 @@ jobs:
       - uses: webfactory/ssh-agent@v0.9.0
         with: {ssh-private-key: "${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}"}
       - name: Debug
-        run: pwd && ls -R
+        run: ls -R
       - name: Package
         run: |
           VERSION="${{ github.event.inputs.version }}"
-          DIST_DIR="./dist_release"
-          for platform in "$DIST_DIR"/*; do
-            if [ -d "$platform" ] && [ "${platform##*/}" != "source" ]; then
-              platform_name="${platform##*/}"
-              echo "Packaging $platform_name..."
-              # Binaries-Only
-              cp -t "$platform/" ./LICENSE ./README.md 2>/dev/null || true
-              zip -r "bitmango-free-$VERSION-$platform_name-binaries.zip" "$platform_name"
-              # Full-Source
-              source_staging="full-source-$platform_name"
-              mkdir -p "$source_staging/binaries"
-              cp -r "$DIST_DIR/source/"* "$source_staging/"
-              cp -r "$platform/"* "$source_staging/binaries/"
-              cp ./LICENSE ./README.md "$source_staging/" 2>/dev/null || true
-              cd "$source_staging"
-              zip -r "../bitmango-free-$VERSION-$platform_name-full.zip" .
-              cd ..
+          cd dist_release
+          for platform in *; do
+            if [ -d "$platform" ] && [ "$platform" != "source" ]; then
+              echo "Packaging $platform..."
+              cp -t "$platform/" ../LICENSE ../README.md 2>/dev/null || true
+              zip -r "../bitmango-free-$VERSION-$platform-binaries.zip" "$platform"
+              mkdir -p "../full-source-$platform/binaries"
+              cp -r source/* "../full-source-$platform/"
+              cp -r "$platform/"* "../full-source-$platform/binaries/"
+              cp ../LICENSE ../README.md "../full-source-$platform/" 2>/dev/null || true
+              cd "../full-source-$platform"
+              zip -r "../bitmango-free-$VERSION-$platform-full.zip" .
+              cd ../dist_release
             fi
           done
-          ls -l *.zip
+          ls -l ..
       - name: Release
         run: |
           gh release create ${{ github.event.inputs.version }} \
             --repo bitmango-trading/bitmango-trade-cli \
             --title "Release ${{ github.event.inputs.version }}" \
             --notes-file docs/changelogs/${{ github.event.inputs.version }}.md \
-            *.zip
+            ../*.zip
         env:
           GH_TOKEN: "${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}"
