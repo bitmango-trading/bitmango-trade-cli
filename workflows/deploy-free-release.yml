@@ -20,14 +20,33 @@ jobs:
       - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}
-      - name: Debug
-        run: git rev-parse --abbrev-ref HEAD; ls -R
       - name: Check Access
         run: git ls-remote git@github.com:bitmango-trading/bitmango-trade-cli.git HEAD
       - name: Validate
         run: if [ ! -f "docs/changelogs/${{ github.event.inputs.version }}.md" ]; then exit 1; fi
       - name: Package
-        run: bash scripts/deploy/package_release.sh ${{ github.event.inputs.version }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          BASE_DIR=$(pwd)
+          DIST_DIR="$BASE_DIR/dist_release"
+          for platform in "$DIST_DIR"/*; do
+            if [ -d "$platform" ] && [ "$(basename "$platform")" != "source" ]; then
+              platform_name=$(basename "$platform")
+              echo "Packaging $platform_name..."
+              # Binaries-Only
+              cp -t "$platform/" "$BASE_DIR/LICENSE" "$BASE_DIR/README.md" 2>/dev/null || true
+              zip -r "$BASE_DIR/bitmango-free-$VERSION-$platform_name-binaries.zip" "$platform_name"
+              # Full-Source
+              source_staging="$BASE_DIR/full-source-$platform_name"
+              mkdir -p "$source_staging/binaries"
+              cp -r "$DIST_DIR/source/"* "$source_staging/"
+              cp -r "$platform/"* "$source_staging/binaries/"
+              cp "$BASE_DIR/LICENSE" "$BASE_DIR/README.md" "$source_staging/" 2>/dev/null || true
+              cd "$source_staging"
+              zip -r "$BASE_DIR/bitmango-free-$VERSION-$platform_name-full.zip" .
+              cd "$BASE_DIR"
+            fi
+          done
       - name: Release
         run: |
           gh release create ${{ github.event.inputs.version }} \
