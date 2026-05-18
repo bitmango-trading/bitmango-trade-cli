@@ -48,7 +48,8 @@ jobs:
             if grep -q "^!${file}$" bitmango-free/.whitelist; then
               echo "$file"
             # Check if file is NOT in the whitelist (and not ignored)
-            elif ! grep -q "^${file}$" bitmango-free/.whitelist; then
+            # Skip whitelist check for the whitelist file itself
+            elif [[ "$file" != "bitmango-free/.whitelist" ]] && ! grep -q "^${file}$" bitmango-free/.whitelist; then
               echo "$file"
             fi
           done)
