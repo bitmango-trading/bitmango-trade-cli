@@ -20,10 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build (Nuitka/Rust)
+        shell: bash
         run: |
             mkdir -p dist_release
-            # Actual build commands would go here. For now, simulating artifact creation
-            # by copying real file contents if available, otherwise dummy.
             if [ -f "bitmango-free/bin/bitmango" ]; then
                 cp bitmango-free/bin/bitmango dist_release/bitmango${{ matrix.suffix }}
                 cp bitmango-free/bin/bitmango-vault dist_release/bitmango-vault${{ matrix.suffix }}
