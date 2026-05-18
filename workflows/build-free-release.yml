@@ -19,10 +19,11 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          python -m venv venv
-          if [ -f "venv/Scripts/activate" ]; then source venv/Scripts/activate; else source venv/bin/activate; fi
-          ./venv/bin/uv pip install nuitka zstandard || ./venv/Scripts/uv pip install nuitka zstandard
-          [ -f "requirements.txt" ] && (./venv/bin/uv pip install -r requirements.txt || ./venv/Scripts/uv pip install -r requirements.txt)
+          source $HOME/.cargo/env
+          uv venv venv
+          source venv/bin/activate || source venv/Scripts/activate
+          uv pip install nuitka zstandard
+          [ -f "requirements.txt" ] && uv pip install -r requirements.txt
           mkdir -p "bin_outputs/${{ matrix.platform }}"
           for entry in bitmango bitmango-vault bitmango-help; do
             python -m nuitka --standalone --onefile --output-filename="$entry${{ matrix.suffix }}" bitmango-free/bin/"$entry"
