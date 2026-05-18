@@ -19,8 +19,13 @@ jobs:
         run: |
           while IFS= read -r file; do
             [[ -z "$file" || "$file" =~ ^# || "$file" == ".whitelist-pro" ]] && continue
-            if [ ! -e "$file" ]; then
-              echo "Error: Required asset '$file' from .whitelist-pro not found."
+            
+            # The files are listed in .whitelist-pro relative to the bitmango-pro/ dir, 
+            # so we prepend bitmango-pro/
+            path="bitmango-pro/$file"
+            
+            if [ ! -e "$path" ]; then
+              echo "Error: Required asset '$path' not found."
               exit 1
             fi
           done < "bitmango-pro/.whitelist-pro"
