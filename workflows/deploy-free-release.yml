@@ -1,98 +1,34 @@
 name: Deploy Bitmango Free Release
-
 on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Release Branch (e.g. releases-2026-05-18)'
+        description: "Release Branch"
         required: true
       version:
-        description: 'Version Tag (e.g. 2026-05-18)'
+        description: "Version Tag"
         required: true
-
 jobs:
   validate-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Checkout Source
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch }}
-
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
+      - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}
-
-      - name: Check Repository Access
+      - name: Check Access
+        run: git ls-remote git@github.com:bitmango-trading/bitmango-trade-cli.git HEAD
+      - name: Validate
+        run: if [ ! -f "docs/changelogs/${{ github.event.inputs.version }}.md" ]; then exit 1; fi
+      - name: Package
+        run: ./scripts/deploy/package_release.sh ${{ github.event.inputs.version }}
+      - name: Release
         run: |
-          # Use git to verify SSH access to the target repo
-          git ls-remote git@github.com:bitmango-trading/bitmango-trade-cli.git HEAD
-          echo "✅ Access to target repository verified via SSH."
-
-      - name: Validate Release Branch
-        run: |
-          # 1. Check for changelog
-          ls -R; if [ ! -f "docs/changelogs/${{ github.event.inputs.version }}.md" ]; then
-            echo "❌ Error: Changelog docs/changelogs/${{ github.event.inputs.version }}.md missing."
-            exit 1
-          fi
-          
-          # 2. Check for binaries
-          if [ ! -d "dist_release" ] || [ -z "$(ls -A dist_release)" ]; then
-            echo "❌ Error: No binaries found in dist_release/."
-            exit 1
-          fi
-          
-          # 2. Check for binaries
-          if [ ! -d "dist_release" ] || [ -z "$(ls -A dist_release)" ]; then
-            echo "❌ Error: No binaries found in dist_release/."
-            exit 1
-          fi
-
-          # 3. Pattern-based secret scanning
-          PATTERNS="AIza[0-9A-Za-z-_]{35}|ghp_[0-9A-zA-Z]{36}|xox[baprs]-[0-9A-Za-z]{10,}"
-          if grep -rEi "$PATTERNS" . --exclude-dir=.git --exclude-dir=dist_release; then
-             echo "❌ Error: Potential secrets found in release branch content."
-             exit 1
-          fi
-          echo "✅ Release validation passed."
-          echo "✅ Release validation passed."
-
-      - name: Package and Release
-        run: |
-          cd dist_release
-          # Loop through each platform directory
-          for platform_dir in *; do
-            if [ -d "$platform_dir" ] && [ "$platform_dir" != "source" ]; then
-              echo "Packaging Binaries-Only: $platform_dir..."
-              cp -t "$platform_dir/" ../LICENSE ../README.md 2>/dev/null || true
-              zip -r "../bitmango-free-${{ github.event.inputs.version }}-$platform_dir-binaries.zip" "$platform_dir"
-
-              echo "Packaging Full-Source: $platform_dir..."
-              mkdir -p "../full-source-$platform_dir"
-              cp -r source/* "../full-source-$platform_dir/"
-              mkdir -p "../full-source-$platform_dir/binaries"
-              cp -r "$platform_dir"/* "../full-source-$platform_dir/binaries/"
-              cp ../LICENSE ../README.md "../full-source-$platform_dir/" 2>/dev/null || true
-              
-              cd "../full-source-$platform_dir"
-              zip -r "../bitmango-free-${{ github.event.inputs.version }}-$platform_dir-full.zip" .
-              cd ../dist_release
-            fi
-          done
-
-          # Use SSH for git operations
-          git config --global user.email "deploy@bitmango.com"
-          git config --global user.name "BitMango Deployer"
-          git remote add target git@github.com:bitmango-trading/bitmango-trade-cli.git
-          
-          # Create Release using the new ZIPs via tag push and release creation
-          # The ZIP files were created in the parent directory of dist_release
-          cd ..
-          ls -l *.zip; gh release create ${{ github.event.inputs.version }} \
+          gh release create ${{ github.event.inputs.version }} \
             --repo bitmango-trading/bitmango-trade-cli \
             --title "Release ${{ github.event.inputs.version }}" \
             --notes-file docs/changelogs/${{ github.event.inputs.version }}.md \
