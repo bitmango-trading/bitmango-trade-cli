@@ -22,6 +22,7 @@ jobs:
             platform: macos
             suffix: ""
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
@@ -35,10 +36,11 @@ jobs:
         run: |
           mkdir -p dist_release
           
-          # Build each entry point
+          # Build each entry point with optimized resource usage
           for entry in bitmango bitmango-vault bitmango-help; do
             python -m nuitka --standalone --onefile --assume-yes-for-downloads \
               --output-filename=$entry${{ matrix.suffix }} \
+              --jobs=2 \
               bitmango-free/bin/$entry
           done
           
