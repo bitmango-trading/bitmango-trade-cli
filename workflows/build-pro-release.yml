@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   build:
+    name: Build Pro ${{ github.event.inputs.version }} - ${{ matrix.platform }}
     strategy:
       matrix:
         include:
@@ -69,7 +70,7 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: pro-binaries-${{ matrix.platform }}
+          name: pro-binaries-${{ github.event.inputs.version }}-${{ matrix.platform }}
           path: bin_outputs/${{ matrix.platform }}
 
   collect-and-commit:
@@ -85,7 +86,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist_release/
-          pattern: pro-binaries-*
+          pattern: pro-binaries-${{ github.event.inputs.version }}-*
           merge-multiple: true
 
       - name: Commit and Push
