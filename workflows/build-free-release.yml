@@ -129,6 +129,9 @@ jobs:
             mv dist_release/binaries-${{ github.event.inputs.version }}-macos/* dist_release/macos/
             rmdir dist_release/binaries-${{ github.event.inputs.version }}-macos
           fi
+          
+          # Remove legacy flat binaries if they exist in the root
+          rm -f dist_release/bitmango dist_release/bitmango.exe dist_release/bitmango-help dist_release/bitmango-help.exe dist_release/bitmango-vault dist_release/bitmango-vault.exe
 
       - name: Add metadata
         run: |
