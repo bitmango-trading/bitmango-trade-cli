@@ -74,6 +74,13 @@ jobs:
           ref: releases-${{ github.event.inputs.version }}
           submodules: false
 
+      - name: Prepare workspace
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git reset --hard HEAD
+          git clean -fd
+
       - name: Download all binaries
         uses: actions/download-artifact@v4
         with:
@@ -90,10 +97,6 @@ jobs:
 
       - name: Commit and Push
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git reset --hard HEAD
-          git clean -fd
           git add dist_release/
           if ! git diff --cached --quiet; then
             git commit -m "chore: add all binaries for release ${{ github.event.inputs.version }}"
