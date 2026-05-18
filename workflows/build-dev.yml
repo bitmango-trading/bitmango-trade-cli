@@ -1,0 +1,29 @@
+name: Build and Validate Dev Binaries
+on: [push]
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            suffix: ""
+          - os: windows-latest
+            platform: windows
+            suffix: ".exe"
+          - os: macos-latest
+            platform: macos
+            suffix: ""
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build (Nuitka/Rust)
+        run: |
+            # [Simplified placeholder for your build steps]
+            mkdir -p dist_release
+            touch dist_release/bitmango${{ matrix.suffix }}
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bitmango-binaries-${{ matrix.platform }}
+          path: dist_release/

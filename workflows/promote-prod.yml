@@ -1,0 +1,28 @@
+name: Promote to Production
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'The Run ID of the successful build in this repo'
+        required: true
+      version:
+        description: 'Version Tag (e.g. 2026-05-18)'
+        required: true
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.inputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: artifacts/
+      - name: Create Release in Prod Repo
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}
+          repository: bitmango-trading/bitmango-trade-cli
+          tag_name: ${{ github.event.inputs.version }}
+          files: artifacts/**/*
