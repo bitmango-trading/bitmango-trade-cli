@@ -36,9 +36,17 @@ jobs:
           fi
           
           # 3. Security Sanity Check (no logs/secrets)
-          if [ "$(find . -name '*.log')" ]; then
-            echo "❌ Error: Found log files in the release branch."
+          if [ "$(find . -name '*.log' -o -name '.env' -o -name 'api_keys.py' -o -name '*.secret')" ]; then
+            echo "❌ Error: Found sensitive files (logs, .env, api_keys, etc.) in the release branch."
             exit 1
+          fi
+          
+          # 4. Pattern-based secret scanning
+          # Patterns for common API keys/secrets
+          PATTERNS="AIza[0-9A-Za-z-_]{35}|ghp_[0-9a-zA-Z]{36}|xox[baprs]-[0-9a-zA-Z]{10,}"
+          if grep -rEi "$PATTERNS" . --exclude-dir=.git --exclude-dir=dist_release; then
+             echo "❌ Error: Potential secrets found in release branch content."
+             exit 1
           fi
           echo "✅ Release validation passed."
 
