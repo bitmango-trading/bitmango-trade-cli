@@ -21,6 +21,13 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch }}
 
+      - name: Check Repository Access
+        run: |
+          gh repo view bitmango-trading/bitmango-trade-cli > /dev/null
+          echo "✅ Access to target repository verified."
+        env:
+          GH_TOKEN: ${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}
+
       - name: Validate Release Branch
         run: |
           # 1. Check for changelog
