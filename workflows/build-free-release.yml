@@ -86,7 +86,7 @@ jobs:
           if [ -f "LICENSE" ]; then cp LICENSE dist_release/; fi
           if [ -f "README.md" ]; then cp README.md dist_release/; fi
           mkdir -p dist_release/source
-          cp -r bitmango-free/bitmango-cli dist_release/source/
+          cp -r bitmango-cli dist_release/source/
 
       - name: Commit and Push
         run: |
