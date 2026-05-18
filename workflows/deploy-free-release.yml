@@ -67,25 +67,27 @@ jobs:
           fi
           echo "✅ Release validation passed."
 
-      - name: Create Release in Prod Repo
+      - name: Package and Release
         run: |
-          # Package artifacts into a ZIP file
           cd artifacts
-          ZIP_NAME="bitmango-free-${{ github.event.inputs.version }}-${{ matrix.platform }}.zip"
-          # Wait, the artifacts are already there from the build run. 
-          # We need to zip the specific artifact folder.
+          # Loop through each platform directory
+          for platform_dir in *; do
+            if [ -d "$platform_dir" ]; then
+              cd "$platform_dir"
 
-          # Since there are multiple artifacts (one per platform), 
-          # we loop through them and zip them
-          for dir in *; do
-            if [ -d "$dir" ]; then
-              cd "$dir"
-              zip -r "../${dir}.zip" .
+              # 1. Binaries-Only ZIP (exclude 'source' folder)
+              echo "Packaging Binaries-Only: $platform_dir..."
+              zip -r "../bitmango-free-${{ github.event.inputs.version }}-$platform_dir-binaries.zip" . -x "source/*"
+
+              # 2. Full-Source ZIP (include everything)
+              echo "Packaging Full-Source: $platform_dir..."
+              zip -r "../bitmango-free-${{ github.event.inputs.version }}-$platform_dir-full.zip" .
+
               cd ..
             fi
           done
 
-          # Push the zips to production repo
+          # Create Release on target repo using the new ZIPs
           gh release create ${{ github.event.inputs.version }} \
             --repo bitmango-trading/bitmango-trade-cli \
             --title "Release ${{ github.event.inputs.version }}" \
