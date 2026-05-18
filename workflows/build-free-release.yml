@@ -136,7 +136,6 @@ jobs:
       - name: Add metadata
         run: |
           if [ -f "LICENSE" ]; then cp LICENSE dist_release/; fi
-          if [ -f "README.md" ]; then cp README.md dist_release/; fi
           mkdir -p dist_release/source
           if [ -d "bitmango-free/bitmango-cli" ]; then
             cp -r bitmango-free/bitmango-cli dist_release/source/
