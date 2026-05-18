@@ -28,8 +28,8 @@ jobs:
       - uses: actions/checkout@v4
       - shell: bash
         run: |
-          pip install --no-cache-dir nuitka zstandard
-          [ -f "requirements.txt" ] && pip install -r requirements.txt
+          pip install --no-cache-dir -r requirements.txt nuitka zstandard
+          
           mkdir -p "bin_outputs/${{ matrix.platform }}"
           for entry in bitmango bitmango-vault bitmango-help; do
             python -m nuitka --standalone --onefile --output-filename="$entry${{ matrix.suffix }}" bitmango-free/bin/"$entry"
