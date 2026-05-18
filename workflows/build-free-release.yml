@@ -23,7 +23,11 @@ jobs:
               exit 1
             fi
           done
-          echo "All entry points verified."
+          if [ ! -d "bitmango-cli" ]; then
+            echo "Error: bitmango-cli source directory not found"
+            exit 1
+          fi
+          echo "All entry points and source directories verified."
 
   build:
     needs: pre-flight
