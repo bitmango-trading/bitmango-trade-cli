@@ -69,21 +69,26 @@ jobs:
 
       - name: Package and Release
         run: |
-          cd artifacts
-          # Loop through each platform directory
+          cd dist_release
+          # Loop through each platform directory (linux, windows, macos)
           for platform_dir in *; do
             if [ -d "$platform_dir" ]; then
-              cd "$platform_dir"
-
-              # 1. Binaries-Only ZIP (exclude 'source' folder)
+              # 1. Binaries-Only ZIP: Binaries, License, Installer at root
               echo "Packaging Binaries-Only: $platform_dir..."
-              zip -r "../bitmango-free-${{ github.event.inputs.version }}-$platform_dir-binaries.zip" . -x "source/*"
+              # Copy metadata to the platform dir for packaging
+              if [ -f "../LICENSE" ]; then cp "../LICENSE" "$platform_dir/"; fi
+              # Assuming installers exist in scripts/ or similar - adjust as needed
+              # cp ../scripts/installers/$platform_dir/* "$platform_dir/" 
+              
+              zip -r "../bitmango-free-${{ github.event.inputs.version }}-$platform_dir-binaries.zip" "$platform_dir"
 
-              # 2. Full-Source ZIP (include everything)
+              # 2. Full-Source ZIP: Source in root, Binaries in root/binaries/
               echo "Packaging Full-Source: $platform_dir..."
-              zip -r "../bitmango-free-${{ github.event.inputs.version }}-$platform_dir-full.zip" .
-
-              cd ..
+              mkdir -p "$platform_dir/binaries"
+              mv "$platform_dir"/* "$platform_dir/binaries/" || true
+              cp -r source/* "$platform_dir/"
+              
+              zip -r "../bitmango-free-${{ github.event.inputs.version }}-$platform_dir-full.zip" "$platform_dir"
             fi
           done
 
@@ -91,7 +96,7 @@ jobs:
           gh release create ${{ github.event.inputs.version }} \
             --repo bitmango-trading/bitmango-trade-cli \
             --title "Release ${{ github.event.inputs.version }}" \
-            --notes-file docs/changelogs/${{ github.event.inputs.version }}.md \
+            --notes-file ../docs/changelogs/${{ github.event.inputs.version }}.md \
             *.zip
         env:
           GH_TOKEN: ${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}
