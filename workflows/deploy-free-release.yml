@@ -44,11 +44,19 @@ jobs:
           # Find all files in root and compare against its internal whitelist
           # Supports whitelist lines and exclusion lines (starting with !)
           UNAUTHORIZED_FILES=$(find . -type f -not -path "./.git/*" -not -path "./dist_release/*" -not -name ".whitelist" | while read file; do
-            # Remove leading ./
-            file=${file#./}
-            # Check if file is in the whitelist
-            if ! grep -q "^${file}$" .whitelist; then
-              echo "$file"
+            # The 'file' variable already has a leading './' from find
+            # Remove the './' prefix
+            clean_file=${file#./}
+            
+            # Skip whitelist check for the whitelist file itself
+            [[ "$clean_file" == ".whitelist" ]] && continue
+            
+            # Check if file is explicitly ignored (starts with !)
+            if grep -q "^!${clean_file}$" .whitelist; then
+              echo "$clean_file"
+            # Check if file is NOT in the whitelist (and not ignored)
+            elif ! grep -q "^${clean_file}$" .whitelist; then
+              echo "$clean_file"
             fi
           done)
           
