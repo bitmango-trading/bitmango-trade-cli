@@ -39,6 +39,10 @@ jobs:
       - name: Build Standalone Binaries (Nuitka)
         shell: bash
         run: |
+          # 1. Clean up any remnants from previous runs
+          git reset --hard HEAD
+          git clean -fd
+          
           mkdir -p dist_release
           
           # Build each entry point
@@ -50,7 +54,6 @@ jobs:
           done
           
           # Move built files explicitly
-          # Nuitka creates *.dist/ directories. Move the binary from there if it exists.
           for entry in bitmango bitmango-vault bitmango-help; do
             if [ -f "$entry.dist/$entry${{ matrix.suffix }}" ]; then
               mv "$entry.dist/$entry${{ matrix.suffix }}" dist_release/
@@ -73,10 +76,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Clean up any potential untracked clutter or previous build remnants
-          git reset --hard HEAD
-          git clean -fd
-
           # Add all build artifacts
           git add dist_release/
           
