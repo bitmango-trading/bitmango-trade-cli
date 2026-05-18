@@ -66,6 +66,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
+          # Clean up any potential untracked clutter or previous build remnants
+          git reset --hard HEAD
+          git clean -fd
+
           # Add all build artifacts
           git add dist_release/
           
