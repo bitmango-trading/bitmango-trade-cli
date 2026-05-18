@@ -1,155 +1,61 @@
 name: Build Bitmango Free Release
-
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version Tag (e.g. 2026-05-18)'
-        required: true
-
-permissions:
-  contents: write
-
+      version: {description: "Version Tag", required: true}
 jobs:
   pre-flight:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify assets from whitelist
-        run: |
+      - run: |
           while IFS= read -r file; do
             [[ -z "$file" || "$file" =~ ^# || "$file" == ".whitelist" ]] && continue
-            
-            # Check bitmango-free/ subdir, then root, then scripts/ subdir
-            if [ -e "bitmango-free/$file" ]; then
-                path="bitmango-free/$file"
-            elif [ -e "$file" ]; then
-                path="$file"
-            elif [ -e "scripts/$file" ]; then
-                path="scripts/$file"
-            else
-              echo "Error: Required asset '$file' not found in bitmango-free/, root, or scripts/."
-              exit 1
+            if [ ! -e "bitmango-free/$file" ] && [ ! -e "$file" ] && [ ! -e "scripts/$file" ]; then
+              echo "Error: Required asset '$file' missing." && exit 1
             fi
           done < "bitmango-free/.whitelist"
-          echo "All assets verified."
-
   build:
     needs: pre-flight
-    name: Build ${{ github.event.inputs.version }} - ${{ matrix.platform }}
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            platform: linux
-            suffix: ""
-          - os: windows-latest
-            platform: windows
-            suffix: ".exe"
-          - os: macos-latest
-            platform: macos
-            suffix: ""
+          - {os: ubuntu-latest, platform: linux, suffix: ""}
+          - {os: windows-latest, platform: windows, suffix: ".exe"}
+          - {os: macos-latest, platform: macos, suffix: ""}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: false
-
-      - name: Install dependencies
-        shell: bash
-        run: |
+      - run: |
           pip install nuitka zstandard
-          if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
-
-      - name: Build Standalone Binaries (Nuitka)
-        shell: bash
-        run: |
-          mkdir -p bin_outputs/${{ matrix.platform }}
+          [ -f "requirements.txt" ] && pip install -r requirements.txt
+          mkdir -p "bin_outputs/${{ matrix.platform }}"
           for entry in bitmango bitmango-vault bitmango-help; do
-            python -m nuitka --standalone --onefile --assume-yes-for-downloads \
-              --output-filename=$entry${{ matrix.suffix }} \
-              --jobs=2 \
-              bitmango-free/bin/$entry
-            
-            # Move binary to output directory
-            if [ -f "$entry.dist/$entry${{ matrix.suffix }}" ]; then
-              mv "$entry.dist/$entry${{ matrix.suffix }}" bin_outputs/${{ matrix.platform }}/
-            elif [ -f "$entry${{ matrix.suffix }}" ]; then
-              mv "$entry${{ matrix.suffix }}" bin_outputs/${{ matrix.platform }}/
-            fi
+            python -m nuitka --standalone --onefile --output-filename="$entry${{ matrix.suffix }}" bitmango-free/bin/"$entry"
+            mv "$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || mv "$entry.dist/$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || true
           done
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: binaries-${{ github.event.inputs.version }}-${{ matrix.platform }}
-          path: bin_outputs/${{ matrix.platform }}
-
+          name: "binaries-${{ github.event.inputs.version }}-${{ matrix.platform }}"
+          path: "bin_outputs/${{ matrix.platform }}"
   collect-and-commit:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: releases-${{ github.event.inputs.version }}
-          submodules: false
-
-      - name: Prepare workspace
+        with: {ref: "releases-${{ github.event.inputs.version }}"}
+      - uses: actions/download-artifact@v4
+        with: {path: "dist_release/", pattern: "binaries-${{ github.event.inputs.version }}-*", merge-multiple: false}
+      - name: Organize
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git reset --hard HEAD
-          git clean -fd
-
-      - name: Download all binaries
-        uses: actions/download-artifact@v4
-        with:
-          path: dist_release/
-          pattern: binaries-${{ github.event.inputs.version }}-*
-          merge-multiple: false
-
-      - name: Organize binaries
-        run: |
-          # The download-artifact with merge-multiple: false creates:
-          # dist_release/binaries-VERSION-linux/bitmango
-          # dist_release/binaries-VERSION-windows/bitmango.exe
-          # We move these into clean platform subfolders under dist_release/
-          mkdir -p dist_release/linux dist_release/windows dist_release/macos
-          
-          if [ -d "dist_release/binaries-${{ github.event.inputs.version }}-linux" ]; then
-            mv dist_release/binaries-${{ github.event.inputs.version }}-linux/* dist_release/linux/
-            rmdir dist_release/binaries-${{ github.event.inputs.version }}-linux
-          fi
-          if [ -d "dist_release/binaries-${{ github.event.inputs.version }}-windows" ]; then
-            mv dist_release/binaries-${{ github.event.inputs.version }}-windows/* dist_release/windows/
-            rmdir dist_release/binaries-${{ github.event.inputs.version }}-windows
-          fi
-          if [ -d "dist_release/binaries-${{ github.event.inputs.version }}-macos" ]; then
-            mv dist_release/binaries-${{ github.event.inputs.version }}-macos/* dist_release/macos/
-            rmdir dist_release/binaries-${{ github.event.inputs.version }}-macos
-          fi
-          
-          # Remove legacy flat binaries if they exist in the root
-          rm -f dist_release/bitmango dist_release/bitmango.exe dist_release/bitmango-help dist_release/bitmango-help.exe dist_release/bitmango-vault dist_release/bitmango-vault.exe
-
-      - name: Add metadata
-        run: |
-          if [ -f "LICENSE" ]; then cp LICENSE dist_release/; fi
-          mkdir -p dist_release/source
-          if [ -d "bitmango-free/bitmango-cli" ]; then
-            cp -r bitmango-free/bitmango-cli dist_release/source/
-          elif [ -d "bitmango-cli" ]; then
-            cp -r bitmango-cli dist_release/source/
-          fi
-
-      - name: Commit and Push
-        run: |
-          git add dist_release/
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: add all binaries for release ${{ github.event.inputs.version }}"
-            git pull --rebase origin releases-${{ github.event.inputs.version }}
-            git push origin HEAD:releases-${{ github.event.inputs.version }}
-          else
-            echo "No changes to commit"
-          fi
+          mkdir -p dist_release/linux dist_release/macos dist_release/windows
+          for dir in dist_release/binaries-${{ github.event.inputs.version }}-*; do
+            platform="${dir##*-}"
+            mv "$dir"/* "dist_release/$platform/"
+            rmdir "$dir"
+          done
+          rm -rf dist_release/source && mkdir -p dist_release/source
+          cp -r bitmango-cli/* dist_release/source/
+          git config user.name "bot" && git config user.email "bot@bot.com"
+          git add dist_release/ && git commit -m "chore: organize binaries ${{ github.event.inputs.version }}" || echo "No changes"
+          git push origin HEAD:releases-${{ github.event.inputs.version }}
