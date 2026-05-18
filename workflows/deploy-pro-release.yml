@@ -1,0 +1,50 @@
+name: Deploy Bitmango Pro Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Pro Release Branch (e.g. releases-2026-05-18-pro)'
+        required: true
+      version:
+        description: 'Version Tag (e.g. 2026-05-18)'
+        required: true
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Package and Store ZIP
+        run: |
+          cd artifacts
+          for dir in *; do
+            if [ -d "$dir" ]; then
+              cd "$dir"
+              zip -r "../${dir}.zip" .
+              cd ..
+            fi
+          done
+          
+          # Create an internal 'releases/pro' folder in the repo to store the ZIPs
+          mkdir -p releases/pro
+          cp *.zip releases/pro/
+          
+      - name: Commit ZIPs to Branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add releases/pro/*.zip
+          git commit -m "chore: add pro release binaries for ${{ github.event.inputs.version }}"
+          git push origin HEAD:${{ github.event.inputs.branch }}
