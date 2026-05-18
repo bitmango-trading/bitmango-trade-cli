@@ -42,14 +42,19 @@ jobs:
           fi
           
           # Find all files in bitmango-free and compare against its internal whitelist
+          # Supports whitelist lines and exclusion lines (starting with !)
           UNAUTHORIZED_FILES=$(find bitmango-free -type f | while read file; do
-            if ! grep -q "^${file}$" bitmango-free/.whitelist; then
+            # Check if file is explicitly ignored (starts with !)
+            if grep -q "^!${file}$" bitmango-free/.whitelist; then
+              echo "$file"
+            # Check if file is NOT in the whitelist (and not ignored)
+            elif ! grep -q "^${file}$" bitmango-free/.whitelist; then
               echo "$file"
             fi
           done)
           
           if [ -n "$UNAUTHORIZED_FILES" ]; then
-            echo "❌ ERROR: These files in bitmango-free are not whitelisted:"
+            echo "❌ ERROR: These files in bitmango-free are not whitelisted or are explicitly excluded:"
             echo "$UNAUTHORIZED_FILES"
             exit 1
           fi
