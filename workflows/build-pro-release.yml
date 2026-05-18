@@ -30,6 +30,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: releases-${{ github.event.inputs.version }}-pro
+          submodules: false
 
       - name: Install dependencies
         shell: bash
