@@ -26,7 +26,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - run: |
+      - shell: bash
+        run: |
           pip install nuitka zstandard
           [ -f "requirements.txt" ] && pip install -r requirements.txt
           mkdir -p "bin_outputs/${{ matrix.platform }}"
@@ -46,7 +47,7 @@ jobs:
         with: {ref: "releases-${{ github.event.inputs.version }}"}
       - uses: actions/download-artifact@v4
         with: {path: "dist_release/", pattern: "binaries-${{ github.event.inputs.version }}-*", merge-multiple: false}
-      - name: Organize
+      - shell: bash
         run: |
           mkdir -p dist_release/linux dist_release/macos dist_release/windows
           for dir in dist_release/binaries-${{ github.event.inputs.version }}-*; do
