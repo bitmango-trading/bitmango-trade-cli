@@ -14,22 +14,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Build
         shell: bash
         run: |
-          # Use the environment-specific paths for activation
-          if [ -d venv ]; then rm -rf venv; fi
           python -m venv venv
           if [ -f "venv/Scripts/activate" ]; then . venv/Scripts/activate; else . venv/bin/activate; fi
-          ./venv/bin/uv pip install nuitka zstandard || ./venv/Scripts/uv pip install nuitka zstandard
-          [ -f "requirements.txt" ] && (./venv/bin/uv pip install -r requirements.txt || ./venv/Scripts/uv pip install -r requirements.txt)
+          pip install nuitka zstandard
+          [ -f "requirements.txt" ] && pip install -r requirements.txt
           mkdir -p "bin_outputs/${{ matrix.platform }}"
-          mkdir -p build_tmp
           for entry in bitmango bitmango-vault bitmango-help; do
-            cp "bitmango-free/bin/$entry" "build_tmp/$entry.py"
-            python -m nuitka --standalone --onefile --output-filename="$entry${{ matrix.suffix }}" "build_tmp/$entry.py"
+            python -m nuitka --standalone --onefile --output-filename="$entry${{ matrix.suffix }}" "bitmango-free/bin/$entry"
             mv "$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || mv "$entry.dist/$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || true
           done
       - uses: actions/upload-artifact@v4
@@ -43,15 +37,15 @@ jobs:
       - uses: actions/checkout@v4
         with: {ref: "releases-${{ github.event.inputs.version }}"}
       - uses: actions/download-artifact@v4
-        with: {path: "dist_release/", pattern: "binaries-${{ github.event.inputs.version }}-*", merge-multiple: false}
+        with: {path: "dist_release"}
       - shell: bash
         run: |
+          ls -R dist_release
           mkdir -p dist_release/linux dist_release/macos dist_release/windows
-          for dir in dist_release/binaries-${{ github.event.inputs.version }}-*; do
-            platform="${dir##*-}"
-            mv "$dir"/* "dist_release/$platform/"
-            rmdir "$dir"
-          done
+          # Manually move artifacts from the download folder structure to the correct subfolders
+          mv dist_release/binaries-${{ github.event.inputs.version }}-linux/* dist_release/linux/ 2>/dev/null || true
+          mv dist_release/binaries-${{ github.event.inputs.version }}-macos/* dist_release/macos/ 2>/dev/null || true
+          mv dist_release/binaries-${{ github.event.inputs.version }}-windows/* dist_release/windows/ 2>/dev/null || true
           rm -rf dist_release/source && mkdir -p dist_release/source
           cp -r bitmango-cli/* dist_release/source/
           git config user.name "bot" && git config user.email "bot@bot.com"
