@@ -90,12 +90,12 @@ jobs:
           git remote add target git@github.com:bitmango-trading/bitmango-trade-cli.git
           
           # Create Release using the new ZIPs via tag push and release creation
-          # Note: We continue to use GH_TOKEN for release creation if needed, 
-          # but we have verified access via SSH.
+          # The ZIP files were created in the parent directory of dist_release
+          cd ..
           gh release create ${{ github.event.inputs.version }} \
             --repo bitmango-trading/bitmango-trade-cli \
             --title "Release ${{ github.event.inputs.version }}" \
-            --notes-file ../docs/changelogs/${{ github.event.inputs.version }}.md \
+            --notes-file docs/changelogs/${{ github.event.inputs.version }}.md \
             *.zip
         env:
           GH_TOKEN: ${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}
