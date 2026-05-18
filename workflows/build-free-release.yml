@@ -71,18 +71,18 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           BRANCH_NAME="releases-${{ github.event.inputs.version }}"
           
-          if [[ "${{ github.event.inputs.force }}" == "true" ]]; then
-            echo "Force flag detected. Deleting existing branch if present."
-            git push origin --delete $BRANCH_NAME || true
-            git branch -D $BRANCH_NAME || true
+          if git show-ref --verify --quiet refs/heads/$BRANCH_NAME; then
+            if [[ "${{ github.event.inputs.force }}" == "true" ]]; then
+              echo "Force flag detected. Deleting existing branch."
+              git push origin --delete $BRANCH_NAME || true
+              git branch -D $BRANCH_NAME || true
+            else
+              echo "❌ Error: Branch $BRANCH_NAME already exists and force is not set to true."
+              exit 1
+            fi
           fi
           
-          if git show-ref --verify --quiet refs/heads/$BRANCH_NAME; then
-            echo "Branch $BRANCH_NAME already exists, checking out..."
-            git checkout $BRANCH_NAME
-          else
-            git checkout -b $BRANCH_NAME
-          fi
+          git checkout -b $BRANCH_NAME
           git push origin $BRANCH_NAME
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
