@@ -6,11 +6,6 @@ on:
       version:
         description: 'Version Tag (e.g. 2026-05-18)'
         required: true
-      force:
-        description: 'Delete existing release branch if it exists?'
-        required: false
-        default: 'false'
-        type: boolean
 
 permissions:
   contents: write
@@ -44,7 +39,7 @@ jobs:
         run: |
           mkdir -p dist_release
           
-          # Build each entry point with optimized resource usage
+          # Build each entry point
           for entry in bitmango bitmango-vault bitmango-help; do
             python -m nuitka --standalone --onefile --assume-yes-for-downloads \
               --output-filename=$entry${{ matrix.suffix }} \
@@ -64,27 +59,16 @@ jobs:
           # Include raw Python source code
           mkdir -p dist_release/source
           cp -r bitmango-free/bitmango-cli dist_release/source/
-      - name: Create and Push Release Branch
+          
+      - name: Commit Binaries to Branch
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch origin
-          BRANCH_NAME="releases-${{ github.event.inputs.version }}"
-          
-          if git show-ref --verify --quiet refs/remotes/origin/$BRANCH_NAME; then
-            if [[ "${{ github.event.inputs.force }}" == "true" ]]; then
-              echo "Force flag detected. Deleting existing branch."
-              git push origin --delete $BRANCH_NAME
-              git branch -D $BRANCH_NAME || true
-            else
-              echo "❌ Error: Branch $BRANCH_NAME already exists and force is not set to true."
-              exit 1
-            fi
-          fi
-          
-          git checkout -b $BRANCH_NAME
-          git push origin $BRANCH_NAME
+          git add dist_release/
+          git commit -m "chore: add binaries for release ${{ github.event.inputs.version }}" || echo "No changes to commit"
+          git push origin HEAD:${{ github.ref_name }}
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
