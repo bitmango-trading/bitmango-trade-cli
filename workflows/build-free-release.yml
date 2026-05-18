@@ -20,8 +20,10 @@ jobs:
         shell: bash
         run: |
           source $HOME/.cargo/env
-          uv pip install --system nuitka zstandard
-          [ -f "requirements.txt" ] && uv pip install --system -r requirements.txt
+          python -m venv venv
+          source venv/bin/activate || source venv/Scripts/activate
+          uv pip install nuitka zstandard
+          [ -f "requirements.txt" ] && uv pip install -r requirements.txt
           mkdir -p "bin_outputs/${{ matrix.platform }}"
           for entry in bitmango bitmango-vault bitmango-help; do
             python -m nuitka --standalone --onefile --output-filename="$entry${{ matrix.suffix }}" bitmango-free/bin/"$entry"
