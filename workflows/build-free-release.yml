@@ -42,6 +42,10 @@ jobs:
           # Add release metadata
           if [ -f "LICENSE" ]; then cp LICENSE dist_release/; fi
           if [ -f "README.md" ]; then cp README.md dist_release/; fi
+          
+          # Include raw Python source code
+          mkdir -p dist_release/source
+          cp -r bitmango-free/bitmango-cli dist_release/source/
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
