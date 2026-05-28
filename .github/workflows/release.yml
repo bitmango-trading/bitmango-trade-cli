@@ -37,7 +37,7 @@ jobs:
             TARGET_PATH="bitmango-free/bin/$entry"
             if [ ! -f "$TARGET_PATH" ]; then TARGET_PATH="bin/$entry"; fi
             
-            python -m nuitka --standalone --onefile --output-filename="$entry${{ matrix.suffix }}" "$TARGET_PATH"
+            python -m nuitka --standalone --onefile --assume-yes-for-downloads --output-filename="$entry${{ matrix.suffix }}" "$TARGET_PATH"
             mv "$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || mv "$entry.dist/$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || true
           done
       - uses: actions/upload-artifact@v4
