@@ -58,16 +58,30 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.version || github.ref_name }}"
           mkdir -p dist_release/linux dist_release/macos dist_release/windows
-          
+
           cp -r artifacts/binaries-linux/* dist_release/linux/ 2>/dev/null || true
           cp -r artifacts/binaries-macos/* dist_release/macos/ 2>/dev/null || true
           cp -r artifacts/binaries-windows/* dist_release/windows/ 2>/dev/null || true
-          
-          # Create zip
-          zip -r "bitmango-free-$VERSION-binaries.zip" dist_release/
-          
-          # Create full source zip (assuming current dir is source)
-          zip -r "bitmango-free-$VERSION-full.zip" . -x "artifacts/*" "venv/*" ".git/*"
+
+          # Include platform-specific install scripts in their respective folders
+          cp install-bitmango.sh dist_release/linux/ 2>/dev/null || true
+          cp setup_env.sh dist_release/linux/ 2>/dev/null || true
+
+          cp install-bitmango-macos.command dist_release/macos/ 2>/dev/null || true
+          cp setup-env-macos.command dist_release/macos/ 2>/dev/null || true
+
+          cp install-bitmango.ps1 dist_release/windows/ 2>/dev/null || true
+          cp setup-env.ps1 dist_release/windows/ 2>/dev/null || true
+
+          # Create separate binary packages for each platform
+          cd dist_release/linux && zip -r "../bitmango-free-$VERSION-linux-binary.zip" . && cd ../..
+          cd dist_release/macos && zip -r "../bitmango-free-$VERSION-macos-binary.zip" . && cd ../..
+          cd dist_release/windows && zip -r "../bitmango-free-$VERSION-windows-binary.zip" . && cd ../..
+
+          # Create separate full source packages for each platform
+          zip -r "bitmango-free-$VERSION-linux-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
+          zip -r "bitmango-free-$VERSION-macos-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
+          zip -r "bitmango-free-$VERSION-windows-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
           
       - name: Create Release
         run: |
