@@ -32,10 +32,9 @@ jobs:
           # The source code in the public repo might have a different structure, 
           # but assuming it's the contents of 'bitmango-free' or the full repo.
           # Based on current setup, the binaries are in bitmango-free/bin/
-          for entry in bitmango bitmango-vault bitmango-help; do
-            # Note: Adjusting path to relative root if bitmango-free is the root in public repo
-            TARGET_PATH="bitmango-free/bin/$entry"
-            if [ ! -f "$TARGET_PATH" ]; then TARGET_PATH="bin/$entry"; fi
+for entry in bitmango bitmango-vault bitmango-help; do
+            TARGET_PATH="bin/$entry"
+            if [ ! -f "$TARGET_PATH" ]; then TARGET_PATH="bitmango-free/bin/$entry"; fi
             
             python -m nuitka --standalone --onefile --assume-yes-for-downloads --output-filename="$entry${{ matrix.suffix }}" "$TARGET_PATH"
             mv "$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || mv "$entry.dist/$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || true
@@ -50,8 +49,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    steps:
+steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.source_ref || github.ref }}
       - uses: actions/download-artifact@v4
         with: {path: "artifacts"}
       - name: Package
