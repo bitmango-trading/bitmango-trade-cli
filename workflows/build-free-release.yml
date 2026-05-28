@@ -4,50 +4,72 @@ on:
     inputs:
       version: {description: "Version Tag", required: true}
 jobs:
-  build:
-    strategy:
-      matrix:
-        include:
-          - {os: ubuntu-latest, platform: linux, suffix: ""}
-          - {os: windows-latest, platform: windows, suffix: ".exe"}
-          - {os: macos-latest, platform: macos, suffix: ""}
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build
-        shell: bash
-        run: |
-          python -m venv venv
-          if [ -f "venv/Scripts/activate" ]; then . venv/Scripts/activate; else . venv/bin/activate; fi
-          pip install nuitka zstandard
-          [ -f "requirements.txt" ] && pip install -r requirements.txt
-          mkdir -p "bin_outputs/${{ matrix.platform }}"
-          for entry in bitmango bitmango-vault bitmango-help; do
-            python -m nuitka --standalone --onefile --output-filename="$entry${{ matrix.suffix }}" "bitmango-free/bin/$entry"
-            mv "$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || mv "$entry.dist/$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || true
-          done
-      - uses: actions/upload-artifact@v4
-        with:
-          name: "binaries-${{ github.event.inputs.version }}-${{ matrix.platform }}"
-          path: "bin_outputs/${{ matrix.platform }}"
   collect-and-commit:
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: {ref: "releases-${{ github.event.inputs.version }}"}
-      - uses: actions/download-artifact@v4
-        with: {path: "dist_release"}
-      - shell: bash
+      - name: Prepare Release Branch
+        shell: bash
         run: |
-          ls -R dist_release
-          mkdir -p dist_release/linux dist_release/macos dist_release/windows
-          # Manually move artifacts from the download folder structure to the correct subfolders
-          mv dist_release/binaries-${{ github.event.inputs.version }}-linux/* dist_release/linux/ 2>/dev/null || true
-          mv dist_release/binaries-${{ github.event.inputs.version }}-macos/* dist_release/macos/ 2>/dev/null || true
-          mv dist_release/binaries-${{ github.event.inputs.version }}-windows/* dist_release/windows/ 2>/dev/null || true
-          rm -rf dist_release/source && mkdir -p dist_release/source
-          cp -r bitmango-cli/* dist_release/source/
-          git config user.name "bot" && git config user.email "bot@bot.com"
-          git add dist_release/ && git commit -m "chore: organize binaries ${{ github.event.inputs.version }}" || echo "No changes"
-          git push origin HEAD:releases-${{ github.event.inputs.version }}
+          VERSION="${{ github.event.inputs.version }}"
+          RELEASE_BRANCH="releases-$VERSION"
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Create and switch to the release branch
+          git checkout -B "$RELEASE_BRANCH"
+          
+          # Clean the branch to ensure a fresh state (excluding .git)
+          git rm -rf .
+          git clean -fd
+          
+          # Sync core files from main (already in current checkout)
+          # We need to restore the files we just deleted if we want to selectively include them,
+          # or just copy them from the original checkout.
+          # Better approach: Checkout main again to a temp dir or use git checkout main -- path
+          
+          echo "📦 Syncing core files (Free Edition)..."
+          INCLUDE_LIST=(
+              "config/api_keys.py.example" 
+              "config/config.env.example" 
+              "config/exchange_health.json" 
+              "docs/" 
+              "tutorials/" 
+              "README.md" 
+              "LICENSE" 
+              "NOTICE.txt" 
+              "SECURITY.md" 
+              "requirements.txt" 
+              "pyproject.toml" 
+              "uv.lock"
+          )
+
+          for item in "${INCLUDE_LIST[@]}"; do
+              git checkout ${{ github.sha }} -- "$item"
+          done
+
+          # Sync bitmango-free contents to root
+          echo "📦 Syncing bitmango-free contents..."
+          cp -r bitmango-free/* .
+          [ -f ".whitelist" ] && cp bitmango-free/.whitelist .
+
+          # Patch pyproject.toml
+          if [ -f "pyproject.toml" ]; then
+            sed -i 's|bitmango-free/bitmango-cli|bitmango-cli|g' pyproject.toml
+          fi
+
+          # Copy installers and setup scripts
+          cp scripts/install-bitmango.sh .
+          cp scripts/install-bitmango.ps1 .
+          cp scripts/install-bitmango.command install-bitmango-macos.command
+          cp scripts/utils/setup_env.sh setup_env.sh
+          cp scripts/setup-env.ps1 .
+          cp scripts/setup-env.command setup-env-macos.command
+
+          chmod +x install-bitmango.sh install-bitmango-macos.command setup_env.sh setup-env-macos.command
+
+          # Finalize release branch
+          git add .
+          git commit -m "chore: release $VERSION (Source Only)"
+          git push origin "$RELEASE_BRANCH" --force

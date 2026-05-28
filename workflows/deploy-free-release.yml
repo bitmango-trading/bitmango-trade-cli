@@ -1,36 +1,36 @@
-name: Deploy Bitmango Free Release
+name: Sync Release to Public Repo
 on:
   workflow_dispatch:
     inputs:
       branch: {description: "Release Branch", required: true}
       version: {description: "Version Tag", required: true}
+
 jobs:
-  validate-and-deploy:
+  sync:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
-        with: {ref: "${{ github.event.inputs.branch }}"}
+        with:
+          ref: "${{ github.event.inputs.branch }}"
+          fetch-depth: 0
+
       - uses: webfactory/ssh-agent@v0.9.0
-        with: {ssh-private-key: "${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}"}
-      - name: Package
+        with:
+          ssh-private-key: "${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}"
+
+      - name: Push to Public Repo
         run: |
-          VERSION="${{ github.event.inputs.version }}"
-          # Create a flat zip for the distribution
-          zip -r "bitmango-free-$VERSION-binaries.zip" dist_release/
-          # Create full source zip
-          mkdir -p full-source
-          cp -r dist_release/source/* full-source/
-          mkdir -p full-source/binaries
-          cp dist_release/* full-source/binaries/ 2>/dev/null || true
-          zip -r "bitmango-free-$VERSION-full.zip" full-source/
-      - name: Release
+          git remote add public git@github.com:bitmango-trading/bitmango-trade-cli.git
+          # Push the release branch to the public repo using its original name
+          git push public "${{ github.event.inputs.branch }}:${{ github.event.inputs.branch }}" --force
+
+      - name: Trigger Public Build
         run: |
-          gh release create ${{ github.event.inputs.version }} \
+          # Use gh to trigger the workflow on the public repo's main branch
+          gh workflow run "Build and Publish Release" \
             --repo bitmango-trading/bitmango-trade-cli \
-            --title "Release ${{ github.event.inputs.version }}" \
-            --notes-file docs/changelogs/${{ github.event.inputs.version }}.md \
-            *.zip
+            --ref main \
+            -f version="${{ github.event.inputs.version }}" \
+            -f source_ref="${{ github.event.inputs.branch }}"
         env:
           GH_TOKEN: "${{ secrets.BITMANGO_TRADE_CLI_FREE_PAT }}"
