@@ -3,10 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       version: {description: "Version Tag", required: true}
-      source_ref: {description: "Source Ref (Branch/Tag)", required: true}
-  push:
-    tags:
-      - '*'
+      source_ref: {description: "Source Ref (Branch/Tag) to build from", required: true}
 
 jobs:
   build:
@@ -20,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.source_ref || format('refs/tags/{0}', github.ref_name) }}
+          ref: ${{ github.event.inputs.source_ref }}
       - name: Build
         shell: bash
         run: |
@@ -48,12 +45,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.source_ref || format('refs/tags/{0}', github.ref_name) }}
+          ref: ${{ github.event.inputs.source_ref }}
       - uses: actions/download-artifact@v4
         with: {path: "artifacts"}
       - name: Package
         run: |
-          VERSION="${{ github.event.inputs.version || github.ref_name }}"
+          VERSION="${{ github.event.inputs.version }}"
           mkdir -p dist_release/linux dist_release/macos dist_release/windows
 
           cp -r artifacts/binaries-linux/* dist_release/linux/ 2>/dev/null || true
