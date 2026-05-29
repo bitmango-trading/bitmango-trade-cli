@@ -6,7 +6,46 @@ on:
       source_ref: {description: "Source Ref (Branch/Tag) to build from", required: true}
 
 jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - {os: ubuntu-latest, platform: linux, suffix: ""}
+          - {os: windows-latest, platform: windows, suffix: ".exe"}
+          - {os: macos-latest, platform: macos, suffix: ""}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.source_ref }}
+      - name: Build Standalone Binaries
+        shell: bash
+        run: |
+          mkdir -p "bin_outputs/${{ matrix.platform }}"
+          
+          python -m venv venv
+          if [ -f "venv/Scripts/activate" ]; then . venv/Scripts/activate; else . venv/bin/activate; fi
+          pip install nuitka zstandard
+          [ -f "requirements.txt" ] && pip install -r requirements.txt
+          
+          for entry in bitmango bitmango-vault bitmango-help; do
+            SOURCE_PATH="bin/$entry"
+            if [ ! -f "$SOURCE_PATH" ]; then SOURCE_PATH="bitmango-free/bin/$entry"; fi
+            
+            # Build with nuitka - follow imports and include all needed packages
+            python -m nuitka --standalone --onefile --assume-yes-for-downloads \
+              --follow-imports \
+              --output-filename="$entry${{ matrix.suffix }}" "$SOURCE_PATH"
+            
+            mv "$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || mv "$entry.dist/$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || true
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "binaries-${{ matrix.platform }}"
+          path: "bin_outputs/${{ matrix.platform }}"
+
   release:
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -14,12 +53,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.source_ref }}
+      - uses: actions/download-artifact@v4
+        with: {path: "artifacts"}
+      
+      - name: Create Binary Packages
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          
+          # Create platform-specific binary-only zips (standalone executables)
+          cd artifacts/binaries-linux && zip -r "../../bitmango-free-$VERSION-linux-bin.zip" . && cd ../..
+          cd artifacts/binaries-macos && zip -r "../../bitmango-free-$VERSION-macos-bin.zip" . && cd ../..
+          cd artifacts/binaries-windows && zip -r "../../bitmango-free-$VERSION-windows-bin.zip" . && cd ../..
       
       - name: Create Full Packages
         run: |
           VERSION="${{ github.event.inputs.version }}"
           
-          # Create platform-specific full zips with source + scripts
           mkdir -p dist_full/linux dist_full/macos dist_full/windows
           
           # Copy source code
@@ -37,11 +86,11 @@ jobs:
           cp -r config dist_full/macos/ 2>/dev/null || true
           cp -r config dist_full/windows/ 2>/dev/null || true
           
-          # Copy binaries/scripts to bin/ folder
+          # Copy binaries to bin/ folder
           mkdir -p dist_full/linux/bin dist_full/macos/bin dist_full/windows/bin
-          cp -r bin/* dist_full/linux/bin/ 2>/dev/null || true
-          cp -r bin/* dist_full/macos/bin/ 2>/dev/null || true
-          cp -r bin/* dist_full/windows/bin/ 2>/dev/null || true
+          cp -r artifacts/binaries-linux/* dist_full/linux/bin/ 2>/dev/null || true
+          cp -r artifacts/binaries-macos/* dist_full/macos/bin/ 2>/dev/null || true
+          cp -r artifacts/binaries-windows/* dist_full/windows/bin/ 2>/dev/null || true
           
           # Copy platform-specific install scripts
           cp install-bitmango.sh dist_full/linux/ 2>/dev/null || true
@@ -57,7 +106,7 @@ jobs:
             cp -r tutorials dist_full/$dir/ 2>/dev/null || true
           done
           
-          # Create platform-specific full zips (containing source + scripts)
+          # Create platform-specific full zips (containing source + standalone binaries)
           cd dist_full/linux && zip -r "../../bitmango-free-$VERSION-linux-full.zip" . && cd ../..
           cd dist_full/macos && zip -r "../../bitmango-free-$VERSION-macos-full.zip" . && cd ../..
           cd dist_full/windows && zip -r "../../bitmango-free-$VERSION-windows-full.zip" . && cd ../..
