@@ -34,6 +34,7 @@ jobs:
               "config/api_keys.py.example" 
               "config/config.env.example" 
               "config/exchange_health.json" 
+              "demo/" 
               "docs/" 
               "tutorials/" 
               "README.md" 

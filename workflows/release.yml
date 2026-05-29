@@ -18,19 +18,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.source_ref }}
-      - name: Build
+      - name: Prepare Binaries
         shell: bash
         run: |
-          python -m venv venv
-          if [ -f "venv/Scripts/activate" ]; then . venv/Scripts/activate; else . venv/bin/activate; fi
-          pip install nuitka zstandard
-          [ -f "requirements.txt" ] && pip install -r requirements.txt
           mkdir -p "bin_outputs/${{ matrix.platform }}"
           for entry in bitmango bitmango-vault bitmango-help; do
-            TARGET_PATH="bin/$entry"
-            if [ ! -f "$TARGET_PATH" ]; then TARGET_PATH="bitmango-free/bin/$entry"; fi
-            python -m nuitka --standalone --onefile --assume-yes-for-downloads --output-filename="$entry${{ matrix.suffix }}" "$TARGET_PATH"
-            mv "$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || mv "$entry.dist/$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || true
+            SOURCE_PATH="bin/$entry"
+            if [ ! -f "$SOURCE_PATH" ]; then SOURCE_PATH="bitmango-free/bin/$entry"; fi
+            # Copy the Python script directly (designed to run via uv)
+            cp "$SOURCE_PATH" "bin_outputs/${{ matrix.platform }}/$entry"
+            chmod +x "bin_outputs/${{ matrix.platform }}/$entry"
           done
       - uses: actions/upload-artifact@v4
         with:
@@ -69,6 +66,16 @@ jobs:
           cp -r bitmango-cli dist_full/linux/ 2>/dev/null || true
           cp -r bitmango-cli dist_full/macos/ 2>/dev/null || true
           cp -r bitmango-cli dist_full/windows/ 2>/dev/null || true
+          
+          # Copy demo folder (needed by bitmango-help)
+          cp -r demo dist_full/linux/ 2>/dev/null || true
+          cp -r demo dist_full/macos/ 2>/dev/null || true
+          cp -r demo dist_full/windows/ 2>/dev/null || true
+          
+          # Copy config folder
+          cp -r config dist_full/linux/ 2>/dev/null || true
+          cp -r config dist_full/macos/ 2>/dev/null || true
+          cp -r config dist_full/windows/ 2>/dev/null || true
           
           # Copy binaries to respective folders
           mkdir -p dist_full/linux/bin
