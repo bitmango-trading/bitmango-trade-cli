@@ -28,17 +28,23 @@ jobs:
           pip install nuitka zstandard
           [ -f "requirements.txt" ] && pip install -r requirements.txt
           
+          # Create bitmango/ package directory for nuitka (it can't follow dynamic imports)
+          # Nuitka needs bitmango/ to exist as a package, not bitmango-cli
+          cp -r bitmango-cli bitmango
+          
           for entry in bitmango bitmango-vault bitmango-help; do
             SOURCE_PATH="bin/$entry"
             if [ ! -f "$SOURCE_PATH" ]; then SOURCE_PATH="bitmango-free/bin/$entry"; fi
             
-            # Build with nuitka - follow imports and include all needed packages
+            # Build with nuitka - the bitmango/ copy lets it find the package
             python -m nuitka --standalone --onefile --assume-yes-for-downloads \
               --follow-imports \
               --output-filename="$entry${{ matrix.suffix }}" "$SOURCE_PATH"
             
             mv "$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || mv "$entry.dist/$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || true
           done
+          
+          rm -rf bitmango
       - uses: actions/upload-artifact@v4
         with:
           name: "binaries-${{ matrix.platform }}"
