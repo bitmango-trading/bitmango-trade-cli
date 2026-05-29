@@ -3,10 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       version: {description: "Version Tag", required: true}
-      source_ref: {description: "Source Ref (Branch/Tag)", required: true}
-  push:
-    tags:
-      - '*'
+      source_ref: {description: "Source Ref (Branch/Tag) to build from", required: true}
 
 jobs:
   build:
@@ -20,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.source_ref || github.ref }}
+          ref: ${{ github.event.inputs.source_ref }}
       - name: Build
         shell: bash
         run: |
@@ -29,14 +26,9 @@ jobs:
           pip install nuitka zstandard
           [ -f "requirements.txt" ] && pip install -r requirements.txt
           mkdir -p "bin_outputs/${{ matrix.platform }}"
-          # The source code in the public repo might have a different structure, 
-          # but assuming it's the contents of 'bitmango-free' or the full repo.
-          # Based on current setup, the binaries are in bitmango-free/bin/
           for entry in bitmango bitmango-vault bitmango-help; do
-            # Note: Adjusting path to relative root if bitmango-free is the root in public repo
-            TARGET_PATH="bitmango-free/bin/$entry"
-            if [ ! -f "$TARGET_PATH" ]; then TARGET_PATH="bin/$entry"; fi
-            
+            TARGET_PATH="bin/$entry"
+            if [ ! -f "$TARGET_PATH" ]; then TARGET_PATH="bitmango-free/bin/$entry"; fi
             python -m nuitka --standalone --onefile --assume-yes-for-downloads --output-filename="$entry${{ matrix.suffix }}" "$TARGET_PATH"
             mv "$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || mv "$entry.dist/$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || true
           done
@@ -53,37 +45,60 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.source_ref || github.ref }}
+          ref: ${{ github.event.inputs.source_ref }}
       - uses: actions/download-artifact@v4
         with: {path: "artifacts"}
-      - name: Package
+      
+      - name: Create Binary Packages
         run: |
-          VERSION="${{ github.event.inputs.version || github.ref_name }}"
-          mkdir -p dist_release/linux dist_release/macos dist_release/windows
+          VERSION="${{ github.event.inputs.version }}"
           
-          cp -r artifacts/binaries-linux/* dist_release/linux/ 2>/dev/null || true
-          cp -r artifacts/binaries-macos/* dist_release/macos/ 2>/dev/null || true
-          cp -r artifacts/binaries-windows/* dist_release/windows/ 2>/dev/null || true
+          # Create platform-specific binary zips
+          cd artifacts/binaries-linux && zip -r "../../bitmango-free-$VERSION-linux-bin.zip" . && cd ../..
+          cd artifacts/binaries-macos && zip -r "../../bitmango-free-$VERSION-macos-bin.zip" . && cd ../..
+          cd artifacts/binaries-windows && zip -r "../../bitmango-free-$VERSION-windows-bin.zip" . && cd ../..
+      
+      - name: Create Full Packages
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
           
-          # Include platform-specific install scripts in their respective folders
-          cp install-bitmango.sh dist_release/linux/ 2>/dev/null || true
-          cp setup_env.sh dist_release/linux/ 2>/dev/null || true
+          # Create platform-specific full zips with source + binaries
+          mkdir -p dist_full/linux dist_full/macos dist_full/windows
           
-          cp install-bitmango-macos.command dist_release/macos/ 2>/dev/null || true
-          cp setup-env-macos.command dist_release/macos/ 2>/dev/null || true
+          # Copy source code
+          cp -r bitmango-cli dist_full/linux/ 2>/dev/null || true
+          cp -r bitmango-cli dist_full/macos/ 2>/dev/null || true
+          cp -r bitmango-cli dist_full/windows/ 2>/dev/null || true
           
-          cp install-bitmango.ps1 dist_release/windows/ 2>/dev/null || true
-          cp setup-env.ps1 dist_release/windows/ 2>/dev/null || true
+          # Copy binaries to respective folders
+          mkdir -p dist_full/linux/bin
+          mkdir -p dist_full/macos/bin
+          cp -r artifacts/binaries-linux/* dist_full/linux/bin/ 2>/dev/null || true
+          cp -r artifacts/binaries-macos/* dist_full/macos/bin/ 2>/dev/null || true
+          cp -r artifacts/binaries-windows/* dist_full/windows/ 2>/dev/null || true
           
-          # Create binaries zip
-          zip -r "bitmango-free-$VERSION-binaries.zip" dist_release/
+          # Copy platform-specific install scripts
+          cp install-bitmango.sh dist_full/linux/ 2>/dev/null || true
+          cp setup_env.sh dist_full/linux/ 2>/dev/null || true
+          cp install-bitmango-macos.command dist_full/macos/ 2>/dev/null || true
+          cp setup-env-macos.command dist_full/macos/ 2>/dev/null || true
+          cp install-bitmango.ps1 dist_full/windows/ 2>/dev/null || true
+          cp setup-env.ps1 dist_full/windows/ 2>/dev/null || true
           
-          # Create full source zip (includes ALL scripts at the root)
-          zip -r "bitmango-$VERSION-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*"
+          # Copy common files
+          for dir in linux macos windows; do
+            cp LICENSE .gitignore requirements.txt README.md SECURITY.md NOTICE.txt dist_full/$dir/ 2>/dev/null || true
+            cp -r tutorials dist_full/$dir/ 2>/dev/null || true
+          done
           
+          # Create platform-specific full zips
+          cd dist_full/linux && zip -r "../../bitmango-free-$VERSION-linux-full.zip" . && cd ../..
+          cd dist_full/macos && zip -r "../../bitmango-free-$VERSION-macos-full.zip" . && cd ../..
+          cd dist_full/windows && zip -r "../../bitmango-free-$VERSION-windows-full.zip" . && cd ../..
+      
       - name: Create Release
         run: |
-          VERSION="${{ github.event.inputs.version || github.ref_name }}"
+          VERSION="${{ github.event.inputs.version }}"
           gh release create "$VERSION" \
             --title "Release $VERSION" \
             --generate-notes \
