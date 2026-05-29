@@ -48,33 +48,57 @@ jobs:
           ref: ${{ github.event.inputs.source_ref }}
       - uses: actions/download-artifact@v4
         with: {path: "artifacts"}
-      - name: Package
+      
+      - name: Create Binary Packages
         run: |
           VERSION="${{ github.event.inputs.version }}"
-          mkdir -p dist_release/linux dist_release/macos dist_release/windows
-
-          cp -r artifacts/binaries-linux/* dist_release/linux/ 2>/dev/null || true
-          cp -r artifacts/binaries-macos/* dist_release/macos/ 2>/dev/null || true
-          cp -r artifacts/binaries-windows/* dist_release/windows/ 2>/dev/null || true
-
-          cp install-bitmango.sh dist_release/linux/ 2>/dev/null || true
-          cp setup_env.sh dist_release/linux/ 2>/dev/null || true
-          cp install-bitmango-macos.command dist_release/macos/ 2>/dev/null || true
-          cp setup-env-macos.command dist_release/macos/ 2>/dev/null || true
-          cp install-bitmango.ps1 dist_release/windows/ 2>/dev/null || true
-          cp setup-env.ps1 dist_release/windows/ 2>/dev/null || true
-
-          cd dist_release/linux && zip -r "../bitmango-free-$VERSION-linux-binary.zip" . && cd ../..
-          cd dist_release/macos && zip -r "../bitmango-free-$VERSION-macos-binary.zip" . && cd ../..
-          cd dist_release/windows && zip -r "../bitmango-free-$VERSION-windows-binary.zip" . && cd ../..
-
-          zip -r "bitmango-free-$VERSION-linux-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
-          zip -r "bitmango-free-$VERSION-macos-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
-          zip -r "bitmango-free-$VERSION-windows-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
-
+          
+          # Create platform-specific binary zips
+          cd artifacts/binaries-linux && zip -r "../../bitmango-free-$VERSION-linux-bin.zip" . && cd ../..
+          cd artifacts/binaries-macos && zip -r "../../bitmango-free-$VERSION-macos-bin.zip" . && cd ../..
+          cd artifacts/binaries-windows && zip -r "../../bitmango-free-$VERSION-windows-bin.zip" . && cd ../..
+      
+      - name: Create Full Packages
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          
+          # Create platform-specific full zips with source + binaries
+          mkdir -p dist_full/linux dist_full/macos dist_full/windows
+          
+          # Copy source code
+          cp -r bitmango-cli dist_full/linux/ 2>/dev/null || true
+          cp -r bitmango-cli dist_full/macos/ 2>/dev/null || true
+          cp -r bitmango-cli dist_full/windows/ 2>/dev/null || true
+          
+          # Copy binaries to respective folders
+          mkdir -p dist_full/linux/bin
+          mkdir -p dist_full/macos/bin
+          cp -r artifacts/binaries-linux/* dist_full/linux/bin/ 2>/dev/null || true
+          cp -r artifacts/binaries-macos/* dist_full/macos/bin/ 2>/dev/null || true
+          cp -r artifacts/binaries-windows/* dist_full/windows/ 2>/dev/null || true
+          
+          # Copy platform-specific install scripts
+          cp install-bitmango.sh dist_full/linux/ 2>/dev/null || true
+          cp setup_env.sh dist_full/linux/ 2>/dev/null || true
+          cp install-bitmango-macos.command dist_full/macos/ 2>/dev/null || true
+          cp setup-env-macos.command dist_full/macos/ 2>/dev/null || true
+          cp install-bitmango.ps1 dist_full/windows/ 2>/dev/null || true
+          cp setup-env.ps1 dist_full/windows/ 2>/dev/null || true
+          
+          # Copy common files
+          for dir in linux macos windows; do
+            cp LICENSE .gitignore requirements.txt README.md SECURITY.md NOTICE.txt dist_full/$dir/ 2>/dev/null || true
+            cp -r tutorials dist_full/$dir/ 2>/dev/null || true
+          done
+          
+          # Create platform-specific full zips
+          cd dist_full/linux && zip -r "../../bitmango-free-$VERSION-linux-full.zip" . && cd ../..
+          cd dist_full/macos && zip -r "../../bitmango-free-$VERSION-macos-full.zip" . && cd ../..
+          cd dist_full/windows && zip -r "../../bitmango-free-$VERSION-windows-full.zip" . && cd ../..
+      
       - name: Create Release
         run: |
-          VERSION="${{ github.event.inputs.version || github.ref_name }}"
+          VERSION="${{ github.event.inputs.version }}"
           gh release create "$VERSION" \
             --title "Release $VERSION" \
             --generate-notes \
