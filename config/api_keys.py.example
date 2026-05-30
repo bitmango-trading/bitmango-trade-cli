@@ -1,0 +1,74 @@
+# api_keys.py
+# Place this file in the project root or in your global config folder (e.g., ~/.config/bitmango/)
+# Use 'bitmango-vault --setup' for a more secure, encrypted storage alternative.
+
+API_KEYS = {
+    # --- BINANCE ---
+    "binance": {
+        "api_key": "YOUR_BINANCE_API_KEY",
+        "secret": "YOUR_BINANCE_SECRET"
+    },
+    "binance_spot_testnet": {
+        "api_key": "SPOT_TESTNET_KEY_FROM_TESTNET.BINANCE.VISION",
+        "secret": "SPOT_TESTNET_SECRET"
+    },
+    "binance_futures_testnet": {
+        "api_key": "FUTURES_TESTNET_KEY_FROM_TESTNET.BINANCEFUTURE.COM",
+        "secret": "FUTURES_TESTNET_SECRET"
+    },
+    "binance_rsa_example": {
+        "api_key": "YOUR_RSA_API_KEY",
+        "private_key": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
+    },
+
+    # --- BYBIT ---
+    "bybit": {
+        "api_key": "YOUR_BYBIT_API_KEY",
+        "secret": "YOUR_BYBIT_SECRET"
+    },
+    "bybit_testnet": {
+        "api_key": "YOUR_BYBIT_TESTNET_API_KEY",
+        "secret": "YOUR_BYBIT_TESTNET_SECRET"
+    },
+
+    # --- PHEMEX ---
+    "phemex": {
+        "api_key": "YOUR_PHEMEX_API_KEY",
+        "secret": "YOUR_PHEMEX_SECRET"
+    },
+    "phemex_testnet": {
+        "api_key": "YOUR_PHEMEX_TESTNET_API_KEY",
+        "secret": "YOUR_PHEMEX_TESTNET_SECRET"
+    },
+
+    # --- HYPERLIQUID ---
+    "hyperliquid": {
+        "api_key": "YOUR_ETH_ADDRESS_OR_API_KEY",
+        "secret": "YOUR_PRIVATE_KEY_OR_SECRET"
+    },
+    "hyperliquid_testnet": {
+        "api_key": "YOUR_ETH_ADDRESS_OR_API_KEY",
+        "secret": "YOUR_PRIVATE_KEY_OR_SECRET"
+    },
+
+    # --- MEXC ---
+    "mexc": {
+        "api_key": "YOUR_MEXC_API_KEY",
+        "secret": "YOUR_MEXC_SECRET"
+    },
+    "mexc_testnet": {
+        "api_key": "YOUR_MEXC_TESTNET_API_KEY",
+        "secret": "YOUR_MEXC_TESTNET_SECRET"
+    },
+
+    # --- OKX ---
+    "okx": {
+        "api_key": "YOUR_OKX_API_KEY",
+        "secret": "YOUR_OKX_SECRET",
+        "password": "YOUR_OKX_PASSPHRASE"
+    },
+
+    # --- OTHER EXCHANGES ---
+    # Follow the same pattern: "<exchange_name>" or "<exchange_name>_testnet"
+    # Supported: bitfinex, bitget, coinbase, dydx, gateio, htx, kraken, kucoin, lbank
+}

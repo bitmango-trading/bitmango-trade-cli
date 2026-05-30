@@ -1,0 +1,161 @@
+#!/usr/bin/env -S uv run python
+import sys
+import os
+import importlib.util
+
+# 1. Aliasing Hyphenated Directory to Python Package
+this_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+parent_dir = os.path.abspath(os.path.join(this_dir, ".."))
+base_import_path = this_dir # Default fallback
+
+# Check if bitmango is already in sys.modules (compiled standalone case)
+if "bitmango" not in sys.modules:
+    cli_pkg_dir = None
+    if os.path.exists(os.path.join(this_dir, "bitmango-cli")):
+        cli_pkg_dir = os.path.join(this_dir, "bitmango-cli")
+        base_import_path = this_dir
+    elif os.path.exists(os.path.join(parent_dir, "bitmango-cli")):
+        cli_pkg_dir = os.path.join(parent_dir, "bitmango-cli")
+        base_import_path = parent_dir
+
+    if cli_pkg_dir:
+        spec = importlib.util.spec_from_file_location("bitmango", os.path.join(cli_pkg_dir, "__init__.py"))
+        bitmango = importlib.util.module_from_spec(spec)
+        sys.modules["bitmango"] = bitmango
+        spec.loader.exec_module(bitmango)
+        
+        # Ensure submodules are importable as bitmango.xxx
+        if base_import_path not in sys.path:
+            sys.path.insert(0, base_import_path)
+    else:
+        # If not found but we are in a standalone, it might already be importable
+        try:
+            import bitmango
+        except ImportError:
+            pass
+
+# Add repo root to path for other shared modules
+repo_root = os.path.abspath(os.path.join(base_import_path, ".."))
+if repo_root not in sys.path:
+    sys.path.insert(0, repo_root)
+
+# Now we can import from bitmango (aliased from bitmango-cli)
+from bitmango.config import get_config_dir
+config_dir = str(get_config_dir())
+if config_dir not in sys.path:
+    sys.path.insert(0, config_dir)
+
+import importlib
+
+
+from bitmango.demo_helper import run_canned_step
+from bitmango.output import display_message
+
+def get_tutorial_steps(cmd):
+    """Maps command to tutorial module and returns its STEPS."""
+    mapping = {
+        'setup': 'setup',
+        'entry': 'entry', 'limit': 'entry', 'buy': 'entry', 'sell': 'entry', 'smart-order': 'entry',
+        'account': 'account', 'positions': 'account', 'history': 'account', 'ledger': 'account', 'transfer': 'account', 'trades': 'account',
+        'stop': 'stop', 'native-stop': 'stop', 'trailing-stop': 'stop', 'ghost-stop': 'stop',
+        'leverage': 'risk', 'margin': 'risk', 'kill-switch': 'risk', 'position-mode': 'risk', 'risk': 'risk',
+        'config': 'config',
+        'open_orders': 'management', 'cancel': 'management', 'close': 'management', 'close-all': 'management', 'report': 'management',
+        'markets': 'market', 'funding': 'market', 'query_order_book': 'market', 'ticker': 'market', 'ohlcv': 'market', 'funding-history': 'market'
+    }
+    
+    module_name = mapping.get(cmd)
+    if not module_name:
+        return None
+        
+    try:
+        mod = importlib.import_module(f"tutorials.{module_name}")
+        return getattr(mod, 'STEPS', {})
+    except Exception as e:
+        display_message('debug', f"Failed to load tutorial module {module_name}: {e}")
+        return None
+
+def main():
+    if len(sys.argv) < 2:
+        display_message('info', "Usage: bitmango-help <command> [step]")
+        display_message('info', "Commands: setup, entry, account, stop, risk, config, management, market, all")
+        sys.exit(1)
+        
+    requested_cmd = sys.argv[1].lower()
+    
+    # Special case for 'all' or no command
+    if requested_cmd == 'all':
+        # This would play the full walkthrough logic
+        from demo.walkthrough import main as play_walkthrough
+        play_walkthrough()
+        return
+
+    steps = get_tutorial_steps(requested_cmd)
+    if not steps:
+        display_message('error', f"No cinematic tutorial available for '{requested_cmd}'.")
+        sys.exit(1)
+        
+    # Sequences for comprehensive help
+    HELP_SEQUENCES = {
+        'setup': ['human', 'ai-bot'],
+        'entry': ['entry', 'limit', 'smart-order'],
+        'buy': ['entry', 'limit', 'smart-order'],
+        'sell': ['entry', 'limit', 'smart-order'],
+        'smart-order': ['smart-order'],
+        
+        'account': ['account', 'positions', 'history', 'ledger', 'trades', 'transfer'],
+        'history': ['history', 'ledger', 'trades'],
+        'ledger': ['ledger', 'history'],
+        'trades': ['trades', 'history'],
+        'transfer': ['transfer'],
+        
+        'stop': ['stop', 'native-stop', 'ghost-stop'],
+        'native-stop': ['native-stop'],
+        'trailing-stop': ['stop'],
+        'ghost-stop': ['ghost-stop'],
+        
+        'leverage': ['leverage', 'margin'],
+        'margin': ['leverage', 'margin'],
+        'risk': ['safety-cap', 'leverage', 'margin', 'position-mode', 'kill-switch'],
+        'position-mode': ['position-mode'],
+        'kill-switch': ['kill-switch'],
+        
+        'config': ['config', 'safety-override'],
+        
+        'management': ['open_orders', 'cancel_all', 'close', 'close_all', 'report'],
+        'open_orders': ['open_orders', 'cancel_all'],
+        'cancel': ['open_orders', 'cancel_all'],
+        'close': ['close', 'close_all'],
+        'close-all': ['close_all'],
+        'report': ['report'],
+        
+        'markets': ['markets', 'order_book', 'ticker', 'ohlcv', 'funding', 'funding_history'],
+        'funding': ['funding', 'funding_history'],
+        'funding-history': ['funding_history', 'funding'],
+        'query_order_book': ['order_book'],
+        'ticker': ['ticker'],
+        'ohlcv': ['ohlcv']
+    }
+    
+    keys_to_play = HELP_SEQUENCES.get(requested_cmd, [requested_cmd])
+    
+    # Filter only keys that exist in the loaded module's steps
+    keys_to_play = [k for k in keys_to_play if k in steps]
+    if not keys_to_play:
+        # Fallback to the first available step in the module if specific key not found
+        keys_to_play = [next(iter(steps.keys()))]
+
+    for step_key in keys_to_play:
+        s = steps[step_key]
+        run_canned_step(
+            s["objective"],
+            s["command_args"],
+            s["explanation"],
+            s["movie"],
+            display_cmd=s.get("display_cmd"),
+            use_case=s.get("use_case"),
+            pro_tip=s.get("pro_tip")
+        )
+
+if __name__ == "__main__":
+    main()
