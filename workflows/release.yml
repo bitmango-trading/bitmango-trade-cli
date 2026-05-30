@@ -22,6 +22,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p "bin_outputs/${{ matrix.platform }}"
+          mkdir -p build_temp
           
           python -m venv venv
           if [ -f "venv/Scripts/activate" ]; then . venv/Scripts/activate; else . venv/bin/activate; fi
@@ -29,22 +30,21 @@ jobs:
           [ -f "requirements.txt" ] && pip install -r requirements.txt
           
           # Create bitmango/ package directory for nuitka (it can't follow dynamic imports)
-          # Nuitka needs bitmango/ to exist as a package, not bitmango-cli
-          cp -r bitmango-cli bitmango
+          cp -r bitmango-cli build_temp/bitmango
+          cd build_temp
           
           for entry in bitmango bitmango-vault bitmango-help; do
-            SOURCE_PATH="bin/$entry"
-            if [ ! -f "$SOURCE_PATH" ]; then SOURCE_PATH="bitmango-free/bin/$entry"; fi
+            SOURCE_PATH="../bitmango-free/bin/$entry"
             
-            # Build with nuitka - the bitmango/ copy lets it find the package
             python -m nuitka --standalone --onefile --assume-yes-for-downloads \
               --follow-imports \
-              --output-filename="$entry${{ matrix.suffix }}" "$SOURCE_PATH"
+              --output-filename="${{ matrix.platform }}-$entry${{ matrix.suffix }}" "$SOURCE_PATH"
             
-            mv "$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || mv "$entry.dist/$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" || true
+            mv "${{ matrix.platform }}-$entry${{ matrix.suffix }}" "../bin_outputs/${{ matrix.platform }}/" 2>/dev/null || \
+              mv "$entry.dist/${{ matrix.platform }}-$entry${{ matrix.suffix }}" "../bin_outputs/${{ matrix.platform }}/" 2>/dev/null || true
           done
           
-          rm -rf bitmango
+          cd .. && rm -rf build_temp/bitmango build_temp/*.dist build_temp/*.py
       - uses: actions/upload-artifact@v4
         with:
           name: "binaries-${{ matrix.platform }}"
@@ -66,7 +66,6 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.version }}"
           
-          # Create platform-specific binary-only zips (standalone executables)
           cd artifacts/binaries-linux && zip -r "../../bitmango-free-$VERSION-linux-bin.zip" . && cd ../..
           cd artifacts/binaries-macos && zip -r "../../bitmango-free-$VERSION-macos-bin.zip" . && cd ../..
           cd artifacts/binaries-windows && zip -r "../../bitmango-free-$VERSION-windows-bin.zip" . && cd ../..
@@ -77,28 +76,23 @@ jobs:
           
           mkdir -p dist_full/linux dist_full/macos dist_full/windows
           
-          # Copy source code
           cp -r bitmango-cli dist_full/linux/ 2>/dev/null || true
           cp -r bitmango-cli dist_full/macos/ 2>/dev/null || true
           cp -r bitmango-cli dist_full/windows/ 2>/dev/null || true
           
-          # Copy demo folder (needed by bitmango-help)
           cp -r demo dist_full/linux/ 2>/dev/null || true
           cp -r demo dist_full/macos/ 2>/dev/null || true
           cp -r demo dist_full/windows/ 2>/dev/null || true
           
-          # Copy config folder
           cp -r config dist_full/linux/ 2>/dev/null || true
           cp -r config dist_full/macos/ 2>/dev/null || true
           cp -r config dist_full/windows/ 2>/dev/null || true
           
-          # Copy binaries to bin/ folder
           mkdir -p dist_full/linux/bin dist_full/macos/bin dist_full/windows/bin
           cp -r artifacts/binaries-linux/* dist_full/linux/bin/ 2>/dev/null || true
           cp -r artifacts/binaries-macos/* dist_full/macos/bin/ 2>/dev/null || true
           cp -r artifacts/binaries-windows/* dist_full/windows/bin/ 2>/dev/null || true
           
-          # Copy platform-specific install scripts
           cp install-bitmango.sh dist_full/linux/ 2>/dev/null || true
           cp setup_env.sh dist_full/linux/ 2>/dev/null || true
           cp install-bitmango-macos.command dist_full/macos/ 2>/dev/null || true
@@ -106,13 +100,11 @@ jobs:
           cp install-bitmango.ps1 dist_full/windows/ 2>/dev/null || true
           cp setup-env.ps1 dist_full/windows/ 2>/dev/null || true
           
-          # Copy common files
           for dir in linux macos windows; do
             cp LICENSE .gitignore requirements.txt README.md SECURITY.md NOTICE.txt dist_full/$dir/ 2>/dev/null || true
             cp -r tutorials dist_full/$dir/ 2>/dev/null || true
           done
           
-          # Create platform-specific full zips (containing source + standalone binaries)
           cd dist_full/linux && zip -r "../../bitmango-free-$VERSION-linux-full.zip" . && cd ../..
           cd dist_full/macos && zip -r "../../bitmango-free-$VERSION-macos-full.zip" . && cd ../..
           cd dist_full/windows && zip -r "../../bitmango-free-$VERSION-windows-full.zip" . && cd ../..
