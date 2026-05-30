@@ -1,0 +1,41 @@
+[project]
+name = "bitmango-bitmango"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "ccxt",
+    "fastapi",
+    "uvicorn",
+    "requests",
+    "httpx>=0.28.1",
+    "wcwidth>=0.6.0",
+    "py-machineid",
+    "pyotp",
+    "eth-account",
+]
+
+[tool.setuptools]
+packages = [
+    "bitmango", "bitmango.exchange", "bitmango.cli", "bitmango.plugins", "bitmango.strategy", "bitmango.messages",
+    "bitmango_free", "bitmango_free.exchange", "bitmango_free.cli", "bitmango_free.plugins", "bitmango_free.strategy", "bitmango_free.messages"
+]
+
+[tool.setuptools.package-dir]
+"bitmango" = "bitmango-cli"
+"bitmango.exchange" = "bitmango-cli/exchange"
+"bitmango.cli" = "bitmango-cli/cli"
+"bitmango.plugins" = "bitmango-cli/plugins"
+"bitmango.strategy" = "bitmango-cli/strategy"
+"bitmango.messages" = "bitmango-cli/messages"
+
+"bitmango_free" = "bitmango-cli"
+"bitmango_free.exchange" = "bitmango-cli/exchange"
+"bitmango_free.cli" = "bitmango-cli/cli"
+"bitmango_free.plugins" = "bitmango-cli/plugins"
+"bitmango_free.strategy" = "bitmango-cli/strategy"
+"bitmango_free.messages" = "bitmango-cli/messages"
+
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
