@@ -30,8 +30,9 @@ jobs:
           [ -f "requirements.txt" ] && pip install -r requirements.txt
           
           # Prepare staging directory with bitmango/ package and source files
-          cp -r bitmango-free/bitmango-cli build_staging/bitmango
-          cp -r bitmango-free/bin build_staging/
+          # The public repo has bitmango-cli at root, so copy from there
+          cp -r bitmango-cli build_staging/bitmango
+          cp -r bin build_staging/ 2>/dev/null || true
           cp -r demo build_staging/ 2>/dev/null || true
           cp -r config build_staging/ 2>/dev/null || true
           
