@@ -28,24 +28,24 @@ jobs:
           pip install nuitka zstandard
           [ -f "requirements.txt" ] && pip install -r requirements.txt
           
-          # Create bitmango/ package alias for nuitka (it can't trace importlib.util.spec_from_file_location)
-          # The entry point looks for bitmango-cli in same dir or parent dir, but nuitka needs bitmango/ as a package
+          # Create bitmango/ package directory for nuitka (can't trace importlib.util.spec_from_file_location)
+          # Copy to current dir so nuitka can find 'import bitmango.xxx' statements
           cp -r bitmango-free/bitmango-cli bitmango
           
           for entry in bitmango bitmango-vault bitmango-help; do
             SOURCE_PATH="bitmango-free/bin/$entry"
             
-            # Output with platform prefix to avoid conflict with bitmango/ package directory
+            # Output to temp file first, then rename (avoid conflict with bitmango/ package)
             python -m nuitka --standalone --onefile --assume-yes-for-downloads \
               --follow-imports \
-              --output-filename="${{ matrix.platform }}-$entry${{ matrix.suffix }}" "$SOURCE_PATH"
+              --output-dir=. \
+              --output-filename="output-${{ matrix.platform }}-$entry${{ matrix.suffix }}" "$SOURCE_PATH"
             
-            mv "${{ matrix.platform }}-$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" 2>/dev/null || \
-              mv "$entry.dist/${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" 2>/dev/null || \
-              mv "$entry.dist/${{ matrix.platform }}-$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" 2>/dev/null || true
+            mv "output-${{ matrix.platform }}-$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" 2>/dev/null || \
+              mv "$entry.dist/output-${{ matrix.platform }}-$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" 2>/dev/null || true
           done
           
-          rm -rf bitmango
+          rm -rf bitmango "$entry.dist"
       - uses: actions/upload-artifact@v4
         with:
           name: "binaries-${{ matrix.platform }}"
