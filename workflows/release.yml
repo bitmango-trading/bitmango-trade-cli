@@ -23,20 +23,17 @@ jobs:
         run: |
           mkdir -p "bin_outputs/${{ matrix.platform }}"
           mkdir -p build_staging
-          
+
           python -m venv venv
           if [ -f "venv/Scripts/activate" ]; then . venv/Scripts/activate; else . venv/bin/activate; fi
           pip install nuitka zstandard
           [ -f "requirements.txt" ] && pip install -r requirements.txt
-          
-          # Prepare staging directory with bitmango/ package and source files
-          # The public repo has bitmango-cli at root, so copy from there
-          cp -r bitmango-cli build_staging/bitmango
-          cp -r bin build_staging/ 2>/dev/null || true
+
+          cp -r bitmango-free/bitmango-cli build_staging/bitmango
+          cp -r bitmango-free/bin build_staging/ 2>/dev/null || true
           cp -r demo build_staging/ 2>/dev/null || true
           cp -r config build_staging/ 2>/dev/null || true
-          
-          # Build from staging directory - no naming conflict
+
           cd build_staging
           for entry in bitmango bitmango-vault bitmango-help; do
             python -m nuitka --standalone --onefile --assume-yes-for-downloads \
@@ -45,7 +42,7 @@ jobs:
               --output-filename="../bin_outputs/${{ matrix.platform }}/${{ matrix.platform }}-$entry${{ matrix.suffix }}" "bin/$entry"
           done
           cd ..
-          
+
           rm -rf build_staging
       - uses: actions/upload-artifact@v4
         with:
@@ -63,54 +60,55 @@ jobs:
           ref: ${{ github.event.inputs.source_ref }}
       - uses: actions/download-artifact@v4
         with: {path: "artifacts"}
-      
+
       - name: Create Binary Packages
         run: |
           VERSION="${{ github.event.inputs.version }}"
-          
-          cd artifacts/binaries-linux && zip -r "../../bitmango-free-$VERSION-linux-bin.zip" . && cd ../..
-          cd artifacts/binaries-macos && zip -r "../../bitmango-free-$VERSION-macos-bin.zip" . && cd ../..
-          cd artifacts/binaries-windows && zip -r "../../bitmango-free-$VERSION-windows-bin.zip" . && cd ../..
-      
-      - name: Create Full Packages
+
+          for platform in linux macos windows; do
+            mkdir -p "dist_binary_${platform}"
+
+            for f in artifacts/binaries-$platform/*; do
+              if [ -f "$f" ]; then
+                filename=$(basename "$f")
+                simple_name=$(echo "$filename" | cut -d'-' -f2-)
+                cp "$f" "dist_binary_${platform}/${simple_name}"
+              fi
+            done
+
+            cp scripts/install-bitmango.sh dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/utils/setup_env.sh dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/install-bitmango.command dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/setup-env.command dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/install-bitmango.ps1 dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/setup-env.ps1 dist_binary_${platform}/ 2>/dev/null || true
+            cp README.md dist_binary_${platform}/ 2>/dev/null || true
+            cp LICENSE dist_binary_${platform}/ 2>/dev/null || true
+            cp SECURITY.md dist_binary_${platform}/ 2>/dev/null || true
+
+            cd dist_binary_${platform} && zip -r "../../bitmango-${VERSION}-${platform}-bin.zip" . && cd ..
+
+            rm -rf "dist_binary_${platform}"
+          done
+
+      - name: Create SDK Package
         run: |
           VERSION="${{ github.event.inputs.version }}"
-          
-          mkdir -p dist_full/linux dist_full/macos dist_full/windows
-          
-          cp -r bitmango-cli dist_full/linux/ 2>/dev/null || true
-          cp -r bitmango-cli dist_full/macos/ 2>/dev/null || true
-          cp -r bitmango-cli dist_full/windows/ 2>/dev/null || true
-          
-          cp -r demo dist_full/linux/ 2>/dev/null || true
-          cp -r demo dist_full/macos/ 2>/dev/null || true
-          cp -r demo dist_full/windows/ 2>/dev/null || true
-          
-          cp -r config dist_full/linux/ 2>/dev/null || true
-          cp -r config dist_full/macos/ 2>/dev/null || true
-          cp -r config dist_full/windows/ 2>/dev/null || true
-          
-          mkdir -p dist_full/linux/bin dist_full/macos/bin dist_full/windows/bin
-          cp -r artifacts/binaries-linux/* dist_full/linux/bin/ 2>/dev/null || true
-          cp -r artifacts/binaries-macos/* dist_full/macos/bin/ 2>/dev/null || true
-          cp -r artifacts/binaries-windows/* dist_full/windows/bin/ 2>/dev/null || true
-          
-          cp install-bitmango.sh dist_full/linux/ 2>/dev/null || true
-          cp setup_env.sh dist_full/linux/ 2>/dev/null || true
-          cp install-bitmango-macos.command dist_full/macos/ 2>/dev/null || true
-          cp setup-env-macos.command dist_full/macos/ 2>/dev/null || true
-          cp install-bitmango.ps1 dist_full/windows/ 2>/dev/null || true
-          cp setup-env.ps1 dist_full/windows/ 2>/dev/null || true
-          
-          for dir in linux macos windows; do
-            cp LICENSE .gitignore requirements.txt README.md SECURITY.md NOTICE.txt dist_full/$dir/ 2>/dev/null || true
-            cp -r tutorials dist_full/$dir/ 2>/dev/null || true
-          done
-          
-          cd dist_full/linux && zip -r "../../bitmango-free-$VERSION-linux-full.zip" . && cd ../..
-          cd dist_full/macos && zip -r "../../bitmango-free-$VERSION-macos-full.zip" . && cd ../..
-          cd dist_full/windows && zip -r "../../bitmango-free-$VERSION-windows-full.zip" . && cd ../..
-      
+
+          mkdir -p dist_sdk
+
+          cp -r bitmango-free/bitmango-cli dist_sdk/
+          cp -r demo dist_sdk/ 2>/dev/null || true
+          cp -r config dist_sdk/ 2>/dev/null || true
+          cp -r tutorials dist_sdk/ 2>/dev/null || true
+          cp LICENSE dist_sdk/ 2>/dev/null || true
+          cp README.md dist_sdk/ 2>/dev/null || true
+          cp SECURITY.md dist_sdk/ 2>/dev/null || true
+          cp -r bitmango-free/bin dist_sdk/ 2>/dev/null || true
+
+          cd dist_sdk && zip -r "../../bitmango-${VERSION}-sdk.zip" . && cd ..
+          rm -rf dist_sdk
+
       - name: Create Release
         run: |
           VERSION="${{ github.event.inputs.version }}"
