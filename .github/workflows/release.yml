@@ -22,31 +22,30 @@ jobs:
         shell: bash
         run: |
           mkdir -p "bin_outputs/${{ matrix.platform }}"
-          mkdir -p nuitka_output
+          mkdir -p build_staging
           
           python -m venv venv
           if [ -f "venv/Scripts/activate" ]; then . venv/Scripts/activate; else . venv/bin/activate; fi
           pip install nuitka zstandard
           [ -f "requirements.txt" ] && pip install -r requirements.txt
           
-          # Create bitmango/ package directory for nuitka (it can't trace importlib.util.spec_from_file_location)
-          # We copy to root level, but rename output binary to avoid conflict
-          cp -r bitmango-cli bitmango_nuitka_pkg
+          # Prepare staging directory with bitmango/ package and source files
+          cp -r bitmango-free/bitmango-cli build_staging/bitmango
+          cp -r bitmango-free/bin build_staging/
+          cp -r demo build_staging/ 2>/dev/null || true
+          cp -r config build_staging/ 2>/dev/null || true
           
+          # Build from staging directory - no naming conflict
+          cd build_staging
           for entry in bitmango bitmango-vault bitmango-help; do
-            SOURCE_PATH="bitmango-free/bin/$entry"
-            
             python -m nuitka --standalone --onefile --assume-yes-for-downloads \
               --follow-imports \
-              --output-dir=nuitka_output \
-              --output-filename="${{ matrix.platform }}-$entry${{ matrix.suffix }}" "$SOURCE_PATH"
-            
-            # Move the binary to outputs
-            mv "nuitka_output/${{ matrix.platform }}-$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" 2>/dev/null || \
-              mv "nuitka_output/$entry.dist/${{ matrix.platform }}-$entry${{ matrix.suffix }}" "bin_outputs/${{ matrix.platform }}/" 2>/dev/null || true
+              --output-dir=. \
+              --output-filename="../bin_outputs/${{ matrix.platform }}/${{ matrix.platform }}-$entry${{ matrix.suffix }}" "bin/$entry"
           done
+          cd ..
           
-          rm -rf bitmango_nuitka_pkg nuitka_output/*.dist
+          rm -rf build_staging
       - uses: actions/upload-artifact@v4
         with:
           name: "binaries-${{ matrix.platform }}"
