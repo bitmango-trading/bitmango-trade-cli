@@ -117,9 +117,9 @@ jobs:
           copy_if_exists "scripts/setup-env.ps1" "dist_release/windows/" "scripts/"
 
           # --- Binary-only zips (binaries + installers per platform) ---
-          cd dist_release/linux && zip -r "../bitmango-free-$VERSION-linux-binary.zip" . && cd ../..
-          cd dist_release/macos && zip -r "../bitmango-free-$VERSION-macos-binary.zip" . && cd ../..
-          cd dist_release/windows && zip -r "../bitmango-free-$VERSION-windows-binary.zip" . && cd ../..
+          cd dist_release/linux && zip -r "../../bitmango-free-$VERSION-linux-binary.zip" . && cd ../..
+          cd dist_release/macos && zip -r "../../bitmango-free-$VERSION-macos-binary.zip" . && cd ../..
+          cd dist_release/windows && zip -r "../../bitmango-free-$VERSION-windows-binary.zip" . && cd ../..
 
           # --- Full-source zips (entire repo snapshot, minus noise) ---
           zip -r "bitmango-free-$VERSION-linux-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
