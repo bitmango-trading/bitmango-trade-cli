@@ -29,10 +29,13 @@ jobs:
           pip install nuitka zstandard
           [ -f "requirements.txt" ] && pip install -r requirements.txt
 
-          cp -r bitmango-free/bitmango-cli build_staging/bitmango
-          cp -r bitmango-free/bin build_staging/ 2>/dev/null || true
-          cp -r demo build_staging/ 2>/dev/null || true
-          cp -r config build_staging/ 2>/dev/null || true
+          # Nuitka requires a valid Python package name as the import root.
+          # The source directory is "bitmango-cli/" (hyphenated, invalid package name).
+          # Copy it as "bitmango/" so Nuitka's internal staging resolves correctly.
+          cp -r "bitmango-cli" "build_staging/bitmango"
+          cp -r "bin" "build_staging/"
+          cp -r "config" "build_staging/"
+          cp -r "demo" "build_staging/"
 
           cd build_staging
           for entry in bitmango bitmango-vault bitmango-help; do
@@ -61,60 +64,91 @@ jobs:
       - uses: actions/download-artifact@v4
         with: {path: "artifacts"}
 
-      - name: Create Binary Packages
+      - name: Package
         run: |
           VERSION="${{ github.event.inputs.version }}"
+          mkdir -p dist_release/linux dist_release/macos dist_release/windows
 
-          for platform in linux macos windows; do
-            mkdir -p "dist_binary_${platform}"
+          # --- Validate build artifacts exist before packaging ---
+          echo "::group::Artifacts downloaded"
+          ls -la artifacts/
+          echo "::endgroup::"
 
-            for f in artifacts/binaries-$platform/*; do
-              if [ -f "$f" ]; then
-                filename=$(basename "$f")
-                simple_name=$(echo "$filename" | cut -d'-' -f2-)
-                cp "$f" "dist_binary_${platform}/${simple_name}"
+          for dir in linux macos windows; do
+            suffix=""
+            [ "$dir" = "windows" ] && suffix=".exe"
+            for bin in bitmango bitmango-vault bitmango-help; do
+              if [ ! -f "artifacts/binaries-$dir/$dir-$bin$suffix" ]; then
+                echo "ERROR: Missing binary $bin$suffix for $dir"
+                ls -la "artifacts/binaries-$dir/"
+                exit 1
               fi
             done
-
-            cp scripts/install-bitmango.sh dist_binary_${platform}/ 2>/dev/null || true
-            cp scripts/utils/setup_env.sh dist_binary_${platform}/ 2>/dev/null || true
-            cp scripts/install-bitmango.command dist_binary_${platform}/ 2>/dev/null || true
-            cp scripts/setup-env.command dist_binary_${platform}/ 2>/dev/null || true
-            cp scripts/install-bitmango.ps1 dist_binary_${platform}/ 2>/dev/null || true
-            cp scripts/setup-env.ps1 dist_binary_${platform}/ 2>/dev/null || true
-            cp README.md dist_binary_${platform}/ 2>/dev/null || true
-            cp LICENSE dist_binary_${platform}/ 2>/dev/null || true
-            cp SECURITY.md dist_binary_${platform}/ 2>/dev/null || true
-
-            cd dist_binary_${platform} && zip -r "../../bitmango-${VERSION}-${platform}-bin.zip" . && cd ..
-
-            rm -rf "dist_binary_${platform}"
           done
 
-      - name: Create SDK Package
-        run: |
-          VERSION="${{ github.event.inputs.version }}"
+          # --- Copy installer scripts (check both root-level and scripts/ layouts) ---
+          copy_if_exists() {
+            local src="$1"
+            local dest="$2"
+            if [ -f "$src" ]; then
+              cp "$src" "$dest"
+              echo "Copied: $src -> $dest"
+            else
+              echo "NOTICE: $src not found, skipping"
+            fi
+          }
 
-          mkdir -p dist_sdk
+          # Linux
+          cp artifacts/binaries-linux/* dist_release/linux/
+          copy_if_exists "install-bitmango.sh" "dist_release/linux/" "root"
+          copy_if_exists "scripts/install-bitmango.sh" "dist_release/linux/" "scripts/"
+          copy_if_exists "setup_env.sh" "dist_release/linux/" "root"
+          copy_if_exists "scripts/utils/setup_env.sh" "dist_release/linux/" "scripts/utils/"
+          # macOS
+          cp artifacts/binaries-macos/* dist_release/macos/
+          copy_if_exists "install-bitmango-macos.command" "dist_release/macos/" "root"
+          copy_if_exists "install-bitmango.command" "dist_release/macos/" "scripts/"
+          copy_if_exists "setup-env-macos.command" "dist_release/macos/" "root"
+          # Windows
+          cp artifacts/binaries-windows/* dist_release/windows/
+          copy_if_exists "install-bitmango.ps1" "dist_release/windows/" "root"
+          copy_if_exists "scripts/install-bitmango.ps1" "dist_release/windows/" "scripts/"
+          copy_if_exists "setup-env.ps1" "dist_release/windows/" "root"
+          copy_if_exists "scripts/setup-env.ps1" "dist_release/windows/" "scripts/"
 
-          cp -r bitmango-free/bitmango-cli dist_sdk/
-          cp -r demo dist_sdk/ 2>/dev/null || true
-          cp -r config dist_sdk/ 2>/dev/null || true
-          cp -r tutorials dist_sdk/ 2>/dev/null || true
-          cp LICENSE dist_sdk/ 2>/dev/null || true
-          cp README.md dist_sdk/ 2>/dev/null || true
-          cp SECURITY.md dist_sdk/ 2>/dev/null || true
-          cp -r bitmango-free/bin dist_sdk/ 2>/dev/null || true
+          # --- Binary-only zips (binaries + installers per platform) ---
+          cd dist_release/linux && zip -r "../bitmango-free-$VERSION-linux-binary.zip" . && cd ../..
+          cd dist_release/macos && zip -r "../bitmango-free-$VERSION-macos-binary.zip" . && cd ../..
+          cd dist_release/windows && zip -r "../bitmango-free-$VERSION-windows-binary.zip" . && cd ../..
 
-          cd dist_sdk && zip -r "../../bitmango-${VERSION}-sdk.zip" . && cd ..
-          rm -rf dist_sdk
+          # --- Full-source zips (entire repo snapshot, minus noise) ---
+          zip -r "bitmango-free-$VERSION-linux-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
+          zip -r "bitmango-free-$VERSION-macos-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
+          zip -r "bitmango-free-$VERSION-windows-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
+
+          echo "::group::Produced packages"
+          ls -la *.zip
+          echo "::endgroup::"
 
       - name: Create Release
         run: |
           VERSION="${{ github.event.inputs.version }}"
+
+          # Reject obviously invalid tags before creating the release
+          if ! echo "$VERSION" | grep -qE '^(v)?[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
+            echo "ERROR: Invalid version format '$VERSION'. Expected semver like v0.2.0 or 0.2.0"
+            exit 1
+          fi
+
           gh release create "$VERSION" \
             --title "Release $VERSION" \
+            --notes-start-tag "$VERSION" \
             --generate-notes \
-            *.zip
+            "bitmango-free-$VERSION-linux-binary.zip" \
+            "bitmango-free-$VERSION-macos-binary.zip" \
+            "bitmango-free-$VERSION-windows-binary.zip" \
+            "bitmango-free-$VERSION-linux-full.zip" \
+            "bitmango-free-$VERSION-macos-full.zip" \
+            "bitmango-free-$VERSION-windows-full.zip"
         env:
           GH_TOKEN: ${{ github.token }}
