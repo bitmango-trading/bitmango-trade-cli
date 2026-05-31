@@ -35,7 +35,7 @@ jobs:
           cp -r "bitmango-cli" "build_staging/bitmango"
           cp -r "bin" "build_staging/"
           cp -r "config" "build_staging/"
-          cp -r "demo" "build_staging/"
+          cp -r "demo" "build_staging/" 2>/dev/null || true
 
           cd build_staging
           for entry in bitmango bitmango-vault bitmango-help; do
