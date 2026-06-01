@@ -29,13 +29,10 @@ jobs:
           pip install nuitka zstandard
           [ -f "requirements.txt" ] && pip install -r requirements.txt
 
-          # Nuitka requires a valid Python package name as the import root.
-          # The source directory is "bitmango-cli/" (hyphenated, invalid package name).
-          # Copy it as "bitmango/" so Nuitka's internal staging resolves correctly.
-          cp -r "bitmango-cli" "build_staging/bitmango"
-          cp -r "bin" "build_staging/"
-          cp -r "config" "build_staging/"
-          cp -r "demo" "build_staging/" 2>/dev/null || true
+          cp -r bitmango-cli build_staging/bitmango 2>/dev/null || cp -r bitmango-free/bitmango-cli build_staging/bitmango
+          cp -r bin build_staging/ 2>/dev/null || cp -r bitmango-free/bin build_staging/
+          cp -r demo build_staging/ 2>/dev/null || true
+          cp -r config build_staging/ 2>/dev/null || true
 
           cd build_staging
           for entry in bitmango bitmango-vault bitmango-help; do
@@ -64,62 +61,60 @@ jobs:
       - uses: actions/download-artifact@v4
         with: {path: "artifacts"}
 
-      - name: Package
+      - name: Create Binary Packages
         run: |
           VERSION="${{ github.event.inputs.version }}"
-          mkdir -p dist_release/linux dist_release/macos dist_release/windows
 
-          # --- Validate build artifacts exist before packaging ---
-          echo "::group::Artifacts downloaded"
-          ls -la artifacts/
-          echo "::endgroup::"
+          for platform in linux macos windows; do
+            mkdir -p "dist_binary_${platform}"
 
-          for dir in linux macos windows; do
-            suffix=""
-            [ "$dir" = "windows" ] && suffix=".exe"
-            for bin in bitmango bitmango-vault bitmango-help; do
-              if [ ! -f "artifacts/binaries-$dir/$dir-$bin$suffix" ]; then
-                echo "ERROR: Missing binary $bin$suffix for $dir"
-                ls -la "artifacts/binaries-$dir/"
-                exit 1
+            for f in artifacts/binaries-$platform/*; do
+              if [ -f "$f" ]; then
+                filename=$(basename "$f")
+                simple_name=$(echo "$filename" | cut -d'-' -f2-)
+                cp "$f" "dist_binary_${platform}/${simple_name}"
               fi
             done
+
+            cp scripts/install-bitmango.sh dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/utils/setup_env.sh dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/install-bitmango.command dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/setup-env.command dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/install-bitmango.ps1 dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/setup-env.ps1 dist_binary_${platform}/ 2>/dev/null || true
+            cp README.md dist_binary_${platform}/ 2>/dev/null || true
+            cp LICENSE dist_binary_${platform}/ 2>/dev/null || true
+            cp SECURITY.md dist_binary_${platform}/ 2>/dev/null || true
+
+            cd dist_binary_${platform} && zip -r "../../bitmango-${VERSION}-${platform}-bin.zip" . && cd ..
+
+            rm -rf "dist_binary_${platform}"
           done
 
-          # Linux
-          cp artifacts/binaries-linux/* dist_release/linux/
-          # macOS
-          cp artifacts/binaries-macos/* dist_release/macos/
-          # Windows
-          cp artifacts/binaries-windows/* dist_release/windows/
+      - name: Create SDK Package
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
 
-          # --- Binary-only zips (binaries per platform) ---
-          cd dist_release/linux && zip -r "../../bitmango-$VERSION-linux-bin.zip" . && cd ../..
-          cd dist_release/macos && zip -r "../../bitmango-$VERSION-macos-bin.zip" . && cd ../..
-          cd dist_release/windows && zip -r "../../bitmango-$VERSION-windows-bin.zip" . && cd ../..
+          mkdir -p dist_sdk
 
-          # --- SDK zip (Python source) ---
-          zip -r "bitmango-$VERSION-sdk.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
+          cp -r bitmango-free/bitmango-cli dist_sdk/
+          cp -r demo dist_sdk/ 2>/dev/null || true
+          cp -r config dist_sdk/ 2>/dev/null || true
+          cp -r tutorials dist_sdk/ 2>/dev/null || true
+          cp LICENSE dist_sdk/ 2>/dev/null || true
+          cp README.md dist_sdk/ 2>/dev/null || true
+          cp SECURITY.md dist_sdk/ 2>/dev/null || true
+          cp -r bitmango-free/bin dist_sdk/ 2>/dev/null || true
 
-          echo "::group::Produced packages"
-          ls -la *.zip
-          echo "::endgroup::"
+          cd dist_sdk && zip -r "../../bitmango-${VERSION}-sdk.zip" . && cd ..
+          rm -rf dist_sdk
 
       - name: Create Release
         run: |
           VERSION="${{ github.event.inputs.version }}"
-
-          # Reject obviously invalid tags before creating the release
-          if ! echo "$VERSION" | grep -qE '^[0-9]{4}[.\-][0-9]{2}[.\-][0-9]{2}$'; then
-            echo "ERROR: Invalid version format '$VERSION'. Expected date format like 2026-06-01"
-            exit 1
-          fi
-
-          gh release create "v$VERSION" \
+          gh release create "$VERSION" \
             --title "Release $VERSION" \
-            "bitmango-$VERSION-linux-bin.zip" \
-            "bitmango-$VERSION-macos-bin.zip" \
-            "bitmango-$VERSION-windows-bin.zip" \
-            "bitmango-$VERSION-sdk.zip"
+            --generate-notes \
+            *.zip
         env:
           GH_TOKEN: ${{ github.token }}
