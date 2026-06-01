@@ -1,5 +1,7 @@
 # bitmango Trade CLI 🥭
 
+**🚀 [Download Latest Release](https://github.com/bitmango-trading/bitmango-trade-cli/releases)** (Binaries & Python SDK)
+
 ---
 
 ## What If Your Tools Matched Your Ambition?
@@ -122,28 +124,15 @@ BitMango currently supports the Top 15 global exchanges by volume. Progress indi
 
 ---
 
-## 📦 Release & Deployment
-
-BitMango uses a structured, branch-based workflow to manage Community (Free) and Pro edition releases.
-
-### Workflow Overview
-1. **Stage**: Use `./scripts/deploy/deploy_free_release.sh <version>` to prepare the release branch.
-2. **Build**: Trigger the **Build Bitmango [Free/Pro] Release** action in the GitHub repository Actions tab. Select the release branch and provide the version tag.
-3. **Deploy (Free Only)**: Once binaries are built and committed to the release branch, trigger the **Deploy Bitmango Free Release** action. This validates the release and promotes it to the [bitmango-trade-cli](https://github.com/bitmango-trading/bitmango-trade-cli) repository.
-
-### Release Standards
-- **Changelog**: Every release requires a corresponding `docs/changelogs/YYYY-MM-DD.md` file.
-- **Security**: Automated credential scanning and strict file whitelisting ensure no secrets or logs leak into the release.
-- **Packaging**: Binaries are compiled via `Nuitka` and packaged into platform-specific `.zip` files during the deployment phase.
-
+## 🚀 Installation
 
 ### For Humans 🧑‍💻
-1. **Clone the Repo:** `git clone https://github.com/bitmango-trade/bitmango-trade-cli-dev.git`
+1. **Download the Release:** Get the binary for your OS from the [Releases](https://github.com/bitmango-trading/bitmango-trade-cli/releases) page.
 2. **Setup Your Vault:** `./bitmango-vault --setup` (Securely store your API keys)
 3. **Explore:** Type `./bitmango-help all`
 
 ### For AI Bots 🤖
-1. **Clone the Repo:** `git clone https://github.com/bitmango-trade/bitmango-trade-cli-dev.git`
+1. **Download the SDK:** Get the Python SDK from the [Releases](https://github.com/bitmango-trading/bitmango-trade-cli/releases) page.
 2. **Setup Your Vault:** `./bitmango-vault --setup`
 3. **Direct the AI:** *"Build a bot using bitmango on the simulated exchange"*
 
