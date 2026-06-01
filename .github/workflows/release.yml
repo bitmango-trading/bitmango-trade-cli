@@ -142,7 +142,6 @@ jobs:
 
           gh release create "$VERSION" \
             --title "Release $VERSION" \
-            --generate-notes \
             "bitmango-free-$VERSION-linux-binary.zip" \
             "bitmango-free-$VERSION-macos-binary.zip" \
             "bitmango-free-$VERSION-windows-binary.zip" \
