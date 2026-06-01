@@ -86,45 +86,20 @@ jobs:
             done
           done
 
-          # --- Copy installer scripts (check both root-level and scripts/ layouts) ---
-          copy_if_exists() {
-            local src="$1"
-            local dest="$2"
-            if [ -f "$src" ]; then
-              cp "$src" "$dest"
-              echo "Copied: $src -> $dest"
-            else
-              echo "NOTICE: $src not found, skipping"
-            fi
-          }
-
           # Linux
           cp artifacts/binaries-linux/* dist_release/linux/
-          copy_if_exists "install-bitmango.sh" "dist_release/linux/" "root"
-          copy_if_exists "scripts/install-bitmango.sh" "dist_release/linux/" "scripts/"
-          copy_if_exists "setup_env.sh" "dist_release/linux/" "root"
-          copy_if_exists "scripts/utils/setup_env.sh" "dist_release/linux/" "scripts/utils/"
           # macOS
           cp artifacts/binaries-macos/* dist_release/macos/
-          copy_if_exists "install-bitmango-macos.command" "dist_release/macos/" "root"
-          copy_if_exists "install-bitmango.command" "dist_release/macos/" "scripts/"
-          copy_if_exists "setup-env-macos.command" "dist_release/macos/" "root"
           # Windows
           cp artifacts/binaries-windows/* dist_release/windows/
-          copy_if_exists "install-bitmango.ps1" "dist_release/windows/" "root"
-          copy_if_exists "scripts/install-bitmango.ps1" "dist_release/windows/" "scripts/"
-          copy_if_exists "setup-env.ps1" "dist_release/windows/" "root"
-          copy_if_exists "scripts/setup-env.ps1" "dist_release/windows/" "scripts/"
 
-          # --- Binary-only zips (binaries + installers per platform) ---
-          cd dist_release/linux && zip -r "../../bitmango-free-$VERSION-linux-binary.zip" . && cd ../..
-          cd dist_release/macos && zip -r "../../bitmango-free-$VERSION-macos-binary.zip" . && cd ../..
-          cd dist_release/windows && zip -r "../../bitmango-free-$VERSION-windows-binary.zip" . && cd ../..
+          # --- Binary-only zips (binaries per platform) ---
+          cd dist_release/linux && zip -r "../../bitmango-$VERSION-linux-bin.zip" . && cd ../..
+          cd dist_release/macos && zip -r "../../bitmango-$VERSION-macos-bin.zip" . && cd ../..
+          cd dist_release/windows && zip -r "../../bitmango-$VERSION-windows-bin.zip" . && cd ../..
 
-          # --- Full-source zips (entire repo snapshot, minus noise) ---
-          zip -r "bitmango-free-$VERSION-linux-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
-          zip -r "bitmango-free-$VERSION-macos-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
-          zip -r "bitmango-free-$VERSION-windows-full.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
+          # --- SDK zip (Python source) ---
+          zip -r "bitmango-$VERSION-sdk.zip" . -x "artifacts/*" "venv/*" ".git/*" "dist_release/*" "*.zip"
 
           echo "::group::Produced packages"
           ls -la *.zip
@@ -142,11 +117,9 @@ jobs:
 
           gh release create "v$VERSION" \
             --title "Release $VERSION" \
-            "bitmango-free-$VERSION-linux-binary.zip" \
-            "bitmango-free-$VERSION-macos-binary.zip" \
-            "bitmango-free-$VERSION-windows-binary.zip" \
-            "bitmango-free-$VERSION-linux-full.zip" \
-            "bitmango-free-$VERSION-macos-full.zip" \
-            "bitmango-free-$VERSION-windows-full.zip"
+            "bitmango-$VERSION-linux-bin.zip" \
+            "bitmango-$VERSION-macos-bin.zip" \
+            "bitmango-$VERSION-windows-bin.zip" \
+            "bitmango-$VERSION-sdk.zip"
         env:
           GH_TOKEN: ${{ github.token }}
