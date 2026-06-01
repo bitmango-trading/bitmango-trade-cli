@@ -135,12 +135,12 @@ jobs:
           VERSION="${{ github.event.inputs.version }}"
 
           # Reject obviously invalid tags before creating the release
-          if ! echo "$VERSION" | grep -qE '^(v)?[0-9]{4}[.\-][0-9]{2}[.\-][0-9]{2}$'; then
-            echo "ERROR: Invalid version format '$VERSION'. Expected date format like v2026-06-01 or 2026-06-01"
+          if ! echo "$VERSION" | grep -qE '^[0-9]{4}[.\-][0-9]{2}[.\-][0-9]{2}$'; then
+            echo "ERROR: Invalid version format '$VERSION'. Expected date format like 2026-06-01"
             exit 1
           fi
 
-          gh release create "$VERSION" \
+          gh release create "v$VERSION" \
             --title "Release $VERSION" \
             "bitmango-free-$VERSION-linux-binary.zip" \
             "bitmango-free-$VERSION-macos-binary.zip" \
