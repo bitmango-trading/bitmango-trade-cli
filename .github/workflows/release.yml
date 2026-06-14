@@ -97,14 +97,14 @@ jobs:
 
           mkdir -p dist_sdk
 
-          cp -r bitmango-cli dist_sdk/
+          cp -r bitmango-free/bitmango-cli dist_sdk/
           cp -r demo dist_sdk/ 2>/dev/null || true
           cp -r config dist_sdk/ 2>/dev/null || true
           cp -r tutorials dist_sdk/ 2>/dev/null || true
           cp LICENSE dist_sdk/ 2>/dev/null || true
           cp README.md dist_sdk/ 2>/dev/null || true
           cp SECURITY.md dist_sdk/ 2>/dev/null || true
-          cp -r bin dist_sdk/ 2>/dev/null || true
+          cp -r bitmango-free/bin dist_sdk/ 2>/dev/null || true
 
           cd dist_sdk && zip -r "../../bitmango-${VERSION}-sdk.zip" . && cd ..
           rm -rf dist_sdk
