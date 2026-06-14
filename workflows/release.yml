@@ -6,7 +6,33 @@ on:
       source_ref: {description: "Source Ref (Branch/Tag) to build from", required: true}
 
 jobs:
+  prepare-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.source_ref }}
+      - name: Create SDK Package
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          mkdir -p dist_sdk
+          cp -r bitmango-free/bitmango-cli dist_sdk/
+          cp -r demo dist_sdk/ 2>/dev/null || true
+          cp -r config dist_sdk/ 2>/dev/null || true
+          cp -r tutorials dist_sdk/ 2>/dev/null || true
+          cp LICENSE dist_sdk/ 2>/dev/null || true
+          cp README.md dist_sdk/ 2>/dev/null || true
+          cp SECURITY.md dist_sdk/ 2>/dev/null || true
+          cp -r bitmango-free/bin dist_sdk/ 2>/dev/null || true
+          cd dist_sdk && zip -r "../bitmango-${VERSION}-sdk.zip" . && cd ..
+          rm -rf dist_sdk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdk-package
+          path: bitmango-${{ github.event.inputs.version }}-sdk.zip
+
   build:
+    needs: prepare-source
     strategy:
       matrix:
         include:
@@ -50,7 +76,7 @@ jobs:
           path: "bin_outputs/${{ matrix.platform }}"
 
   release:
-    needs: build
+    needs: [prepare-source, build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -90,24 +116,6 @@ jobs:
 
             rm -rf "dist_binary_${platform}"
           done
-
-      - name: Create SDK Package
-        run: |
-          VERSION="${{ github.event.inputs.version }}"
-
-          mkdir -p dist_sdk
-
-          cp -r bitmango-free/bitmango-cli dist_sdk/
-          cp -r demo dist_sdk/ 2>/dev/null || true
-          cp -r config dist_sdk/ 2>/dev/null || true
-          cp -r tutorials dist_sdk/ 2>/dev/null || true
-          cp LICENSE dist_sdk/ 2>/dev/null || true
-          cp README.md dist_sdk/ 2>/dev/null || true
-          cp SECURITY.md dist_sdk/ 2>/dev/null || true
-          cp -r bitmango-free/bin dist_sdk/ 2>/dev/null || true
-
-          cd dist_sdk && zip -r "../../bitmango-${VERSION}-sdk.zip" . && cd ..
-          rm -rf dist_sdk
 
       - name: Create Release
         run: |
