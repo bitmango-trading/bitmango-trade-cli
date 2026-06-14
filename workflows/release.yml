@@ -29,8 +29,8 @@ jobs:
           pip install nuitka zstandard
           [ -f "requirements.txt" ] && pip install -r requirements.txt
 
-          cp -r bitmango-free/bitmango-cli build_staging/bitmango
-          cp -r bitmango-free/bin build_staging/ 2>/dev/null || true
+          cp -r bitmango-cli build_staging/bitmango 2>/dev/null || cp -r bitmango-free/bitmango-cli build_staging/bitmango
+          cp -r bin build_staging/ 2>/dev/null || cp -r bitmango-free/bin build_staging/
           cp -r demo build_staging/ 2>/dev/null || true
           cp -r config build_staging/ 2>/dev/null || true
 
