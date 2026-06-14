@@ -16,17 +16,20 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.version }}"
           mkdir -p dist_sdk
-          if [ -d "bitmango-free" ]; then
-            cp -r bitmango-free/* dist_sdk/
-          else
-            echo "bitmango-free directory not found, skipping."
-          fi
-          cp -r demo dist_sdk/ 2>/dev/null || true
-          cp -r config dist_sdk/ 2>/dev/null || true
-          cp -r tutorials dist_sdk/ 2>/dev/null || true
-          cp LICENSE dist_sdk/ 2>/dev/null || true
-          cp README.md dist_sdk/ 2>/dev/null || true
-          cp SECURITY.md dist_sdk/ 2>/dev/null || true
+          # Flexible copy: look for common source directories
+          for dir in bitmango-free bitmango-cli bitmango-pro; do
+            if [ -d "$dir" ]; then
+              cp -r "$dir"/* dist_sdk/
+            fi
+          done
+          # Copy essential files if they exist
+          [ -d "demo" ] && cp -r demo dist_sdk/
+          [ -d "config" ] && cp -r config dist_sdk/
+          [ -d "tutorials" ] && cp -r tutorials dist_sdk/
+          [ -f "LICENSE" ] && cp LICENSE dist_sdk/
+          [ -f "README.md" ] && cp README.md dist_sdk/
+          [ -f "SECURITY.md" ] && cp SECURITY.md dist_sdk/
+          
           cd dist_sdk && zip -r "../bitmango-${VERSION}-sdk.zip" . && cd ..
           rm -rf dist_sdk
       - uses: actions/upload-artifact@v4
