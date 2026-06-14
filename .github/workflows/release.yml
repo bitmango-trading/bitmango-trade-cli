@@ -16,7 +16,11 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.version }}"
           mkdir -p dist_sdk
-          cp -r bitmango-free/* dist_sdk/
+          if [ -d "bitmango-free" ]; then
+            cp -r bitmango-free/* dist_sdk/
+          else
+            echo "bitmango-free directory not found, skipping."
+          fi
           cp -r demo dist_sdk/ 2>/dev/null || true
           cp -r config dist_sdk/ 2>/dev/null || true
           cp -r tutorials dist_sdk/ 2>/dev/null || true
