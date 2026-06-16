@@ -27,7 +27,7 @@ jobs:
           [ -d "config" ] && cp -r config dist_sdk/
           [ -d "tutorials" ] && cp -r tutorials dist_sdk/
           [ -f "LICENSE" ] && cp LICENSE dist_sdk/
-          [ -f "README.md" ] && cp README.md dist_sdk/
+          [ -f "README-SDK.md" ] && cp README-SDK.md dist_sdk/README.md
           [ -f "SECURITY.md" ] && cp SECURITY.md dist_sdk/
           
           cd dist_sdk && zip -r "../bitmango-${VERSION}-sdk.zip" . && cd ..
@@ -124,7 +124,7 @@ jobs:
             cp scripts/setup-env.command dist_binary_${platform}/ 2>/dev/null || true
             cp scripts/install-bitmango.ps1 dist_binary_${platform}/ 2>/dev/null || true
             cp scripts/setup-env.ps1 dist_binary_${platform}/ 2>/dev/null || true
-            cp README.md dist_binary_${platform}/ 2>/dev/null || true
+            cp README-BINARY.md dist_binary_${platform}/README.md 2>/dev/null || true
             cp LICENSE dist_binary_${platform}/ 2>/dev/null || true
             cp SECURITY.md dist_binary_${platform}/ 2>/dev/null || true
 
