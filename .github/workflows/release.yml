@@ -132,6 +132,6 @@ jobs:
           gh release create "$VERSION" \
             --title "Release $VERSION" \
             --generate-notes \
-            artifacts/sdk-package/bitmango-${VERSION}-sdk.zip dist_final/*.zip
+            artifacts/sdk-package/bitmango-${VERSION}-sdk.zip dist_final/bitmango-${VERSION}-linux-bin.zip dist_final/bitmango-${VERSION}-macos-bin.zip dist_final/bitmango-${VERSION}-windows-bin.zip
         env:
           GH_TOKEN: ${{ github.token }}
