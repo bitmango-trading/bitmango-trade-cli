@@ -126,13 +126,12 @@ jobs:
       - name: Create Release
         run: |
           VERSION="${{ github.event.inputs.version }}"
-          # The SDK zip was moved to the root by the prepare-source job and artifacts download
-          # The binary zips were created in the root by the release job.
-          # List files to verify
+          # The SDK zip was downloaded into artifacts/sdk-package/
+          # The binary zips were created in the root by the release job, but binary artifacts are in artifacts/binaries-*
           ls -R
           gh release create "$VERSION" \
             --title "Release $VERSION" \
             --generate-notes \
-            bitmango-${VERSION}-sdk.zip bitmango-${VERSION}-*-bin.zip
+            artifacts/sdk-package/bitmango-${VERSION}-sdk.zip bitmango-${VERSION}-*-bin.zip
         env:
           GH_TOKEN: ${{ github.token }}
