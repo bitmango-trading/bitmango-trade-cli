@@ -96,7 +96,7 @@ jobs:
       - name: Create Binary Packages
         run: |
           VERSION="${{ github.event.inputs.version }}"
-
+          mkdir -p dist_final
           for platform in linux macos windows; do
             mkdir -p "dist_binary_${platform}"
 
@@ -118,7 +118,7 @@ jobs:
             cp LICENSE dist_binary_${platform}/ 2>/dev/null || true
             cp SECURITY.md dist_binary_${platform}/ 2>/dev/null || true
 
-            cd dist_binary_${platform} && zip -r "../../bitmango-${VERSION}-${platform}-bin.zip" . && cd ..
+            cd dist_binary_${platform} && zip -r "../../../dist_final/bitmango-${VERSION}-${platform}-bin.zip" . && cd ..
 
             rm -rf "dist_binary_${platform}"
           done
@@ -127,11 +127,11 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.version }}"
           # The SDK zip was downloaded into artifacts/sdk-package/
-          # The binary zips were created in the root directory by the 'Create Binary Packages' step.
+          # The binary zips were created in dist_final/
           ls -R
           gh release create "$VERSION" \
             --title "Release $VERSION" \
             --generate-notes \
-            artifacts/sdk-package/bitmango-${VERSION}-sdk.zip bitmango-${VERSION}-linux-bin.zip bitmango-${VERSION}-macos-bin.zip bitmango-${VERSION}-windows-bin.zip
+            artifacts/sdk-package/bitmango-${VERSION}-sdk.zip dist_final/*.zip
         env:
           GH_TOKEN: ${{ github.token }}
