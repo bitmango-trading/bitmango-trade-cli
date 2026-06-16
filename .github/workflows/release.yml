@@ -136,6 +136,10 @@ jobs:
       - name: Create Release
         run: |
           VERSION="${{ github.event.inputs.version }}"
+          # Delete existing release and tag if they exist
+          gh release delete "$VERSION" --yes --cleanup-tag || true
+          git push --delete origin "$VERSION" || true
+          
           # The SDK zip was downloaded into artifacts/sdk-package/
           # The binary zips were created in dist_final/
           ls -R
