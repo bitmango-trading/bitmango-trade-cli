@@ -128,7 +128,7 @@ jobs:
             cp LICENSE dist_binary_${platform}/ 2>/dev/null || true
             cp SECURITY.md dist_binary_${platform}/ 2>/dev/null || true
 
-            cd dist_binary_${platform} && zip -r "../../../dist_final/bitmango-${VERSION}-${platform}-bin.zip" . && cd ..
+            cd dist_binary_${platform} && zip -r "../dist_final/bitmango-${VERSION}-${platform}-bin.zip" . && cd ..
 
             rm -rf "dist_binary_${platform}"
           done
