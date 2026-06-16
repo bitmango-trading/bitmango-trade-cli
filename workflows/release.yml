@@ -97,8 +97,18 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.version }}"
           mkdir -p dist_final
+          # Diagnostic: list artifacts
+          echo "Listing artifacts:"
+          ls -R artifacts
+
           for platform in linux macos windows; do
             mkdir -p "dist_binary_${platform}"
+
+            # Check if artifact directory exists
+            if [ ! -d "artifacts/binaries-$platform" ]; then
+              echo "Error: Directory artifacts/binaries-$platform not found."
+              exit 1
+            fi
 
             for f in artifacts/binaries-$platform/*; do
               if [ -f "$f" ]; then
