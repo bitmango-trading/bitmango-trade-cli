@@ -75,6 +75,7 @@ jobs:
           cp -r bin build_staging/ 2>/dev/null || cp -r bitmango-free/bin build_staging/
           cp -r demo build_staging/ 2>/dev/null || true
           cp -r config build_staging/ 2>/dev/null || true
+          cp -r tutorials build_staging/ 2>/dev/null || true
 
           cd build_staging
           
@@ -91,6 +92,7 @@ jobs:
           while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$SUCCESS" = false ]; do
             echo "Attempt $((RETRY_COUNT+1)) to build ${{ matrix.entry }} on ${{ matrix.platform }}..."
             if python -m nuitka --standalone --onefile --assume-yes-for-downloads \
+              --include-package=tutorials \
               --follow-imports $JOBS_FLAG \
               --output-dir=. \
               --output-filename="../bin_outputs/${{ matrix.platform }}/${{ matrix.platform }}-${{ matrix.entry }}${{ matrix.suffix }}" "bin/${{ matrix.entry }}"; then

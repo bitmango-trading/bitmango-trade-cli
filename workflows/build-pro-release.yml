@@ -76,6 +76,7 @@ jobs:
           mkdir -p dist_release
           for entry in bitmango bitmango-vault bitmango-help; do
             python -m nuitka --standalone --onefile --assume-yes-for-downloads \
+              --include-package=tutorials \
               --output-filename=$entry${{ matrix.suffix }} \
               --jobs=2 \
               bitmango-free/bin/$entry
