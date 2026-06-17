@@ -1,0 +1,1 @@
+unified_api: https://www.mexc.com/api/docs/spot-api

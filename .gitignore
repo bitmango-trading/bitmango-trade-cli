@@ -1,0 +1,5 @@
+.kilo
+venv/
+__pycache__/
+*.pyc
+dist_full/

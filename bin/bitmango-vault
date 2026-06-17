@@ -1,0 +1,419 @@
+#!/usr/bin/env -S uv run python
+import sys
+import os
+import importlib.util
+
+# 1. Aliasing Hyphenated Directory to Python Package
+this_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+parent_dir = os.path.abspath(os.path.join(this_dir, ".."))
+base_import_path = this_dir # Default fallback
+
+# Check if bitmango is already in sys.modules (compiled standalone case)
+if "bitmango" not in sys.modules:
+    cli_pkg_dir = None
+    if os.path.exists(os.path.join(this_dir, "bitmango-cli")):
+        cli_pkg_dir = os.path.join(this_dir, "bitmango-cli")
+        base_import_path = this_dir
+    elif os.path.exists(os.path.join(parent_dir, "bitmango-cli")):
+        cli_pkg_dir = os.path.join(parent_dir, "bitmango-cli")
+        base_import_path = parent_dir
+
+    if cli_pkg_dir:
+        spec = importlib.util.spec_from_file_location("bitmango", os.path.join(cli_pkg_dir, "__init__.py"))
+        bitmango = importlib.util.module_from_spec(spec)
+        sys.modules["bitmango"] = bitmango
+        spec.loader.exec_module(bitmango)
+        
+        # Ensure submodules are importable as bitmango.xxx
+        if base_import_path not in sys.path:
+            sys.path.insert(0, base_import_path)
+    else:
+        # If not found but we are in a standalone, it might already be importable
+        try:
+            import bitmango
+        except ImportError:
+            pass
+
+# Add repo root to path for other shared modules
+repo_root = os.path.abspath(os.path.join(base_import_path, ".."))
+if repo_root not in sys.path:
+    sys.path.insert(0, repo_root)
+
+# Now we can import from bitmango (aliased from bitmango-cli)
+from bitmango.config import get_config_dir
+config_dir = str(get_config_dir())
+if config_dir not in sys.path:
+    sys.path.insert(0, config_dir)
+
+
+import pyotp
+import qrcode
+import json
+from bitmango.vault import save_vault, load_vault, create_session
+from bitmango.output import display_message, start_boxed_mode, stop_boxed_mode, prompt_user
+
+class VaultError(Exception):
+    """Exception raised for errors in the vault manager."""
+    pass
+
+def authorize_vault(vault):
+    """Prompts for TOTP authorization if security is active."""
+    totp_secret = vault.get("config", {}).get("totp_secret")
+    if not totp_secret:
+        return True
+        
+    start_boxed_mode("VAULT AUTHORIZATION")
+    display_message('info', "Existing security active. Authorization required.")
+    
+    totp = pyotp.TOTP(totp_secret)
+    max_attempts = 3
+    for i in range(max_attempts):
+        try:
+            code = prompt_user(f"Enter current 6-digit TOTP code (Attempt {i+1}/{max_attempts}): ").strip()
+            if totp.verify(code):
+                display_message('success', "Authorization Successful!")
+                stop_boxed_mode()
+                return True
+            else:
+                display_message('error', "Invalid code.")
+        except KeyboardInterrupt:
+            display_message('info', "")
+            display_message('error', "Authorization aborted.")
+            raise VaultError("Authorization aborted.")
+    
+    display_message('error', "Too many failed attempts. Access denied.")
+    display_message('info', "If you lost your TOTP device, you must manually delete '.bitmango_vault'.")
+    stop_boxed_mode()
+    raise VaultError("Authorization failed.")
+
+def setup_vault():
+    # 0. Check for existing vault and authorize
+    existing_vault = load_vault()
+    if existing_vault:
+        authorize_vault(existing_vault)
+
+    start_boxed_mode("BITMANGO VAULT SETUP")
+    
+    # 1. Initialize data structure
+    vault_data = {
+        "keys": {},
+        "config": {
+            "session_ttl": 10,
+            "totp_secret": pyotp.random_base32()
+        }
+    }
+    
+    # 2. TOTP Setup
+    display_message('success', "--- 1. TOTP Security Setup ---")
+    totp = pyotp.TOTP(vault_data["config"]["totp_secret"])
+    provisioning_url = totp.provisioning_uri(name="BitMango CLI", issuer_name="BitMango")
+    
+    display_message('success', "Scan the QR code below with Google Authenticator or Authy.")
+    display_message('success', f"Or enter secret manually: {vault_data['config']['totp_secret']}")
+    stop_boxed_mode() # Stop box to print QR
+    
+    qr = qrcode.QRCode()
+    qr.add_data(provisioning_url)
+    qr.print_ascii()
+    
+    start_boxed_mode("VERIFY TOTP")
+    
+    # Verify TOTP works
+    while True:
+        try:
+            code = prompt_user("Enter the 6-digit code from your app: ").strip()
+            if totp.verify(code):
+                display_message('success', "TOTP Verified!")
+                break
+            else:
+                display_message('error', "Invalid code. Try again.")
+        except KeyboardInterrupt:
+            display_message('info', "")
+            display_message('error', "Setup cancelled.")
+            raise VaultError("Setup cancelled.")
+
+    # 3. Configure Session TTL
+    display_message('success', "--- 2. Admin Session Configuration ---")
+    display_message('success', "How long should transfers and withdrawals stay unlocked after entering TOTP?")
+    display_message('success', "  [10] Default (10 minutes)")
+    display_message('success', "  [-1] Until reboot (Permanent for this machine session)")
+    display_message('success', "  [0]  Disabled (No TOTP requirement - HIGH RISK)")
+    
+    ttl_input = prompt_user("Enter minutes (default 10): ").strip()
+    if not ttl_input:
+        vault_data["config"]["session_ttl"] = 10
+    else:
+        try:
+            vault_data["config"]["session_ttl"] = int(ttl_input)
+        except ValueError:
+            vault_data["config"]["session_ttl"] = 10
+
+    # 4. Input Exchange Keys
+    display_message('success', "--- 3. Exchange API Keys ---")
+    exchanges = ['binance', 'phemex', 'bybit', 'hyperliquid']
+    for ex in exchanges:
+        if prompt_user(f"Configure {ex.upper()}? [y/N]: ").lower() == 'y':
+            key = prompt_user(f"  Enter {ex.upper()} API Key: ").strip()
+            
+            is_rsa = prompt_user(f"  Is this an RSA key? [y/N]: ").lower() == 'y'
+            if is_rsa:
+                prv_path = prompt_user("    Enter path to Private Key (.pem file): ").strip()
+                if os.path.exists(prv_path):
+                    try:
+                        with open(prv_path, 'r') as f:
+                            vault_data["keys"][ex] = {"api_key": key, "private_key": f.read()}
+                            
+                        pub_path = prompt_user("    Enter path to Public Key (.pem file, optional): ").strip()
+                        if pub_path and os.path.exists(pub_path):
+                            with open(pub_path, 'r') as f:
+                                vault_data["keys"][ex]["public_key"] = f.read()
+                    except Exception as e:
+                        display_message('error', f"Failed to read keys: {e}")
+                else:
+                    display_message('error', "Private key file not found.")
+            else:
+                secret = prompt_user(f"  Enter {ex.upper()} Secret: ", mask=True).strip()
+                vault_data["keys"][ex] = {"api_key": key, "secret": secret}
+            
+            # Check for testnet
+            if prompt_user(f"  Configure {ex.upper()} Testnet? [y/N]: ").lower() == 'y':
+                t_key = prompt_user(f"    Enter {ex.upper()} Testnet API Key: ").strip()
+                
+                is_rsa_t = prompt_user(f"    Is this an RSA key? [y/N]: ").lower() == 'y'
+                target_t = f"{ex}_testnet"
+                if is_rsa_t:
+                    t_prv_path = prompt_user("      Enter path to Private Key (.pem file): ").strip()
+                    if os.path.exists(t_prv_path):
+                        try:
+                            with open(t_prv_path, 'r') as f:
+                                vault_data["keys"][target_t] = {"api_key": t_key, "private_key": f.read()}
+                            
+                            t_pub_path = prompt_user("      Enter path to Public Key (.pem file, optional): ").strip()
+                            if t_pub_path and os.path.exists(t_pub_path):
+                                with open(t_pub_path, 'r') as f:
+                                    vault_data["keys"][target_t]["public_key"] = f.read()
+                        except Exception as e:
+                            display_message('error', f"Failed to read keys: {e}")
+                    else:
+                        display_message('error', "Private key file not found.")
+                else:
+                    t_secret = prompt_user(f"    Enter {ex.upper()} Secret: ", mask=True).strip()
+                    vault_data["keys"][target_t] = {"api_key": t_key, "secret": t_secret}
+
+    # 5. Save and finalize
+    save_vault(vault_data)
+    display_message('success', "Vault encrypted and saved successfully!")
+    display_message('success', "You can now safely delete 'api_keys.py'.")
+    display_message('success', "Standard trading commands will work automatically.")
+    display_message('success', "Transfers will prompt for TOTP.")
+    
+    stop_boxed_mode()
+
+def add_key(exchange, is_sandbox=False):
+    vault = load_vault()
+    if not vault:
+        display_message('error', "No vault found. Run --setup first.")
+        return
+        
+    authorize_vault(vault)
+    
+    start_boxed_mode(f"ADD KEY: {exchange.upper()}")
+    target = f"{exchange}_testnet" if is_sandbox else exchange
+    display_message('info', f"Configuring {'Sandbox' if is_sandbox else 'Live'} keys...")
+    
+    key = prompt_user("Enter API Key: ").strip()
+    
+    is_rsa = prompt_user("Is this an RSA key? [y/N]: ").lower() == 'y'
+    secret = None
+    private_key = None
+    public_key = None
+    
+    if is_rsa:
+        prv_path = prompt_user("Enter path to Private Key (.pem file): ").strip()
+        if os.path.exists(prv_path):
+            try:
+                with open(prv_path, 'r') as f:
+                    private_key = f.read()
+            except Exception as e:
+                display_message('error', f"Failed to read private key: {e}")
+                stop_boxed_mode()
+                return
+        else:
+            display_message('error', "Private key file not found.")
+            stop_boxed_mode()
+            return
+            
+        pub_path = prompt_user("Enter path to Public Key (.pem file, optional - press enter to skip): ").strip()
+        if pub_path and os.path.exists(pub_path):
+            try:
+                with open(pub_path, 'r') as f:
+                    public_key = f.read()
+            except Exception as e:
+                display_message('warning', f"Failed to read public key: {e}")
+    else:
+        secret = prompt_user("Enter Secret: ", mask=True).strip()
+    
+    vault["keys"][target] = {"api_key": key}
+    if secret: vault["keys"][target]["secret"] = secret
+    if private_key: vault["keys"][target]["private_key"] = private_key
+    if public_key: vault["keys"][target]["public_key"] = public_key
+    
+    save_vault(vault)
+    display_message('success', f"Keys for {target} saved to vault.")
+    stop_boxed_mode()
+
+def remove_key(exchange, is_sandbox=False):
+    vault = load_vault()
+    if not vault:
+        display_message('error', "No vault found. Run --setup first.")
+        return
+        
+    authorize_vault(vault)
+    
+    start_boxed_mode(f"REMOVE KEY: {exchange.upper()}")
+    target = f"{exchange}_testnet" if is_sandbox else exchange
+    if target in vault["keys"]:
+        del vault["keys"][target]
+        save_vault(vault)
+        display_message('success', f"Keys for {target} removed from vault.")
+    else:
+        display_message('warning', f"No keys found for {target} in vault.")
+    stop_boxed_mode()
+
+def view_vault():
+    vault = load_vault()
+    if not vault:
+        display_message('error', "No vault found. Run --setup first.")
+        return
+        
+    start_boxed_mode("BITMANGO VAULT")
+    
+    ttl = vault['config']['session_ttl']
+    ttl_str = "Disabled" if ttl == 0 else ("Until Reboot" if ttl == -1 else f"{ttl} minutes")
+    
+    display_message('success', f"Admin Session TTL: {ttl_str}")
+    display_message('success', "Configured API Keys:")
+    for ex in vault["keys"]:
+        display_message('success', f"  - {ex}")
+    stop_boxed_mode()
+
+def fingerprint():
+    """Generates a secure hardware fingerprint for Pro Dashboard registration."""
+    from bitmango.license import get_machine_id
+    
+    m_id = get_machine_id()
+    
+    start_boxed_mode("HARDWARE FINGERPRINT")
+    display_message('info', "Use this unique key to authorize this machine in the Pro Dashboard.")
+    display_message('info', "Registration ensures that only your authorized devices can execute trades.")
+    display_message('info', "")
+    
+    # Use display_message to ensure the borders are drawn correctly
+    display_message('info', f"BM-HASH-{m_id.upper()}")
+    
+    display_message('info', "")
+    display_message('success', "Copy the full string above (including BM-HASH-).")
+    stop_boxed_mode()
+
+def interactive_menu():
+    """Guided interactive menu for human users."""
+    while True:
+        start_boxed_mode("BITMANGO VAULT MANAGER")
+        display_message('success', "1. Run Full Setup (Initialize Vault & TOTP)")
+        display_message('success', "2. View Vault Status")
+        display_message('success', "3. Add/Update an Exchange Key")
+        display_message('success', "4. Remove an Exchange Key")
+        display_message('success', "5. Pre-Authorize Session (Unlock)")
+        display_message('success', "6. Generate Hardware Fingerprint")
+        display_message('success', "q. Exit")
+        
+        choice = prompt_user("Select an option: ").strip().lower()
+        stop_boxed_mode()
+        
+        if choice == '1':
+            try: setup_vault()
+            except VaultError: pass
+        elif choice == '2':
+            view_vault()
+        elif choice == '3':
+            ex = prompt_user("Enter exchange name (e.g. binance): ").strip().lower()
+            if ex:
+                sb = prompt_user("Is this for Testnet? [y/N]: ").lower() == 'y'
+                try: add_key(ex, sb)
+                except VaultError: pass
+        elif choice == '4':
+            ex = prompt_user("Enter exchange name to remove: ").strip().lower()
+            if ex:
+                sb = prompt_user("Is this for Testnet? [y/N]: ").lower() == 'y'
+                try: remove_key(ex, sb)
+                except VaultError: pass
+        elif choice == '5':
+            vault = load_vault()
+            if not vault:
+                display_message('error', "No vault found. Run Full Setup first.")
+            else:
+                try:
+                    if authorize_vault(vault):
+                        create_session(vault.get("config", {}).get("session_ttl", 10))
+                except VaultError: pass
+        elif choice == '6':
+            fingerprint()
+        elif choice == 'q':
+            sys.exit(0)
+        else:
+            display_message('error', "Invalid choice.")
+        
+        display_message('info', "") # Add space between loops
+
+def main():
+    is_sandbox = "--sandbox" in sys.argv
+    
+    try:
+        if len(sys.argv) > 1:
+            if "--setup" in sys.argv:
+                setup_vault()
+            elif "--view" in sys.argv:
+                view_vault()
+            elif "fingerprint" in sys.argv or "--fingerprint" in sys.argv:
+                fingerprint()
+            elif "--add-key" in sys.argv:
+                idx = sys.argv.index("--add-key")
+                if idx + 1 < len(sys.argv):
+                    add_key(sys.argv[idx+1].lower(), is_sandbox)
+                else:
+                    display_message('info', "Usage: bitmango-vault --add-key <exchange> [--sandbox]")
+            elif "--remove-key" in sys.argv:
+                idx = sys.argv.index("--remove-key")
+                if idx + 1 < len(sys.argv):
+                    remove_key(sys.argv[idx+1].lower(), is_sandbox)
+                else:
+                    display_message('info', "Usage: bitmango-vault --remove-key <exchange> [--sandbox]")
+            elif "--login" in sys.argv or "--unlock" in sys.argv:
+                vault = load_vault()
+                if not vault:
+                    display_message('error', "No vault found. Run --setup first.")
+                    sys.exit(1)
+                if authorize_vault(vault):
+                    create_session(vault.get("config", {}).get("session_ttl", 10))
+            else:
+                start_boxed_mode("BITMANGO VAULT MANAGER")
+                display_message('info', "Usage: bitmango-vault [options]")
+                display_message('info', "  --setup                Initialize the vault and TOTP")
+                display_message('info', "  --view                 Show configured exchanges")
+                display_message('info', "  fingerprint            Generate machine hardware hash")
+                display_message('info', "  --login / --unlock     Pre-authorize an admin session")
+                display_message('info', "  --add-key <ex>         Add/Update keys for an exchange")
+                display_message('info', "  --remove-key <ex>      Remove keys for an exchange")
+                display_message('info', "  --sandbox              Use with --add-key/--remove-key for testnet keys")
+                stop_boxed_mode()
+        else:
+            interactive_menu()
+    except VaultError as e:
+        display_message('error', f"Vault Manager Error: {e}")
+        sys.exit(1)
+    except Exception as e:
+        display_message('error', f"Fatal Vault Error: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
