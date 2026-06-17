@@ -40,17 +40,26 @@ jobs:
   build:
     needs: prepare-source
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        entry: [bitmango, bitmango-vault, bitmango-help]
         include:
-          - {os: ubuntu-latest, platform: linux, suffix: ""}
-          - {os: windows-latest, platform: windows, suffix: ".exe"}
-          - {os: macos-latest, platform: macos, suffix: ""}
+          - os: ubuntu-latest
+            platform: linux
+            suffix: ""
+          - os: windows-latest
+            platform: windows
+            suffix: ".exe"
+          - os: macos-latest
+            platform: macos
+            suffix: ""
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.source_ref }}
-      - name: Build Standalone Binaries
+      - name: Build Standalone Binary
         shell: bash
         run: |
           mkdir -p "bin_outputs/${{ matrix.platform }}"
@@ -67,18 +76,42 @@ jobs:
           cp -r config build_staging/ 2>/dev/null || true
 
           cd build_staging
-          for entry in bitmango bitmango-vault bitmango-help; do
-            python -m nuitka --standalone --onefile --assume-yes-for-downloads \
-              --follow-imports \
-              --output-dir=. \
-              --output-filename="../bin_outputs/${{ matrix.platform }}/${{ matrix.platform }}-$entry${{ matrix.suffix }}" "bin/$entry"
-          done
-          cd ..
+          
+          # Retry loop and resource limitation for Nuitka
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          SUCCESS=false
+          
+          # Windows-specific: limit jobs to 1 to save memory
+          JOBS_FLAG="--jobs=2"
+          if [[ "${{ matrix.platform }}" == "windows" ]]; then
+            JOBS_FLAG="--jobs=1"
+          fi
 
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$SUCCESS" = false ]; do
+            echo "Attempt $((RETRY_COUNT+1)) to build ${{ matrix.entry }}..."
+            if python -m nuitka --standalone --onefile --assume-yes-for-downloads \
+              --follow-imports $JOBS_FLAG \
+              --output-dir=. \
+              --output-filename="../bin_outputs/${{ matrix.platform }}/${{ matrix.platform }}-${{ matrix.entry }}${{ matrix.suffix }}" "bin/${{ matrix.entry }}"; then
+              SUCCESS=true
+            else
+              RETRY_COUNT=$((RETRY_COUNT+1))
+              echo "Build failed. Retrying in 10 seconds..."
+              sleep 10
+            fi
+          done
+
+          if [ "$SUCCESS" = false ]; then
+            echo "Failed to build ${{ matrix.entry }} after $MAX_RETRIES attempts."
+            exit 1
+          fi
+          
+          cd ..
           rm -rf build_staging
       - uses: actions/upload-artifact@v4
         with:
-          name: "binaries-${{ matrix.platform }}"
+          name: "binaries-${{ matrix.platform }}-${{ matrix.entry }}"
           path: "bin_outputs/${{ matrix.platform }}"
 
   release:
@@ -104,19 +137,8 @@ jobs:
           for platform in linux macos windows; do
             mkdir -p "dist_binary_${platform}"
 
-            # Check if artifact directory exists
-            if [ ! -d "artifacts/binaries-$platform" ]; then
-              echo "Error: Directory artifacts/binaries-$platform not found."
-              exit 1
-            fi
-
-            for f in artifacts/binaries-$platform/*; do
-              if [ -f "$f" ]; then
-                filename=$(basename "$f")
-                simple_name=$(echo "$filename" | cut -d'-' -f2-)
-                cp "$f" "dist_binary_${platform}/${simple_name}"
-              fi
-            done
+            # Copy all entry points for this platform from their specific artifact directories
+            cp artifacts/binaries-${platform}-*/* dist_binary_${platform}/
 
             cp scripts/install-bitmango.sh dist_binary_${platform}/ 2>/dev/null || true
             cp scripts/utils/setup_env.sh dist_binary_${platform}/ 2>/dev/null || true
