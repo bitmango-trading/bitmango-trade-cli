@@ -42,6 +42,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        entry: [bitmango, bitmango-vault, bitmango-help]
         include:
           - os: ubuntu-latest
             platform: linux
@@ -52,12 +54,13 @@ jobs:
           - os: macos-latest
             platform: macos
             suffix: ""
+    name: Build ${{ matrix.platform }} (${{ matrix.entry }})
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.source_ref }}
-      - name: Build Standalone Binaries
+      - name: Build Standalone Binary
         shell: bash
         run: |
           mkdir -p "bin_outputs/${{ matrix.platform }}"
@@ -73,44 +76,42 @@ jobs:
           cp -r demo build_staging/ 2>/dev/null || true
           cp -r config build_staging/ 2>/dev/null || true
 
-          # Sequential build of entry points to save memory, with per-binary retry logic
-          for entry in bitmango bitmango-vault bitmango-help; do
-            MAX_RETRIES=3
-            RETRY_COUNT=0
-            SUCCESS=false
-            
-            # Windows-specific: limit jobs to 1 to save memory
-            JOBS_FLAG="--jobs=2"
-            if [[ "${{ matrix.platform }}" == "windows" ]]; then
-              JOBS_FLAG="--jobs=1"
-            fi
+          cd build_staging
+          
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          SUCCESS=false
+          
+          # Windows-specific: limit jobs to 1 to save memory
+          JOBS_FLAG="--jobs=2"
+          if [[ "${{ matrix.platform }}" == "windows" ]]; then
+            JOBS_FLAG="--jobs=1"
+          fi
 
-            cd build_staging
-            while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$SUCCESS" = false ]; do
-              echo "Attempt $((RETRY_COUNT+1)) to build $entry on ${{ matrix.platform }}..."
-              if python -m nuitka --standalone --onefile --assume-yes-for-downloads \
-                --follow-imports $JOBS_FLAG \
-                --output-dir=. \
-                --output-filename="../bin_outputs/${{ matrix.platform }}/${{ matrix.platform }}-$entry${{ matrix.suffix }}" "bin/$entry"; then
-                SUCCESS=true
-              else
-                RETRY_COUNT=$((RETRY_COUNT+1))
-                echo "Build for $entry failed. Retrying in 10 seconds..."
-                sleep 10
-              fi
-            done
-            cd ..
-
-            if [ "$SUCCESS" = false ]; then
-              echo "Failed to build $entry after $MAX_RETRIES attempts."
-              exit 1
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$SUCCESS" = false ]; do
+            echo "Attempt $((RETRY_COUNT+1)) to build ${{ matrix.entry }} on ${{ matrix.platform }}..."
+            if python -m nuitka --standalone --onefile --assume-yes-for-downloads \
+              --follow-imports $JOBS_FLAG \
+              --output-dir=. \
+              --output-filename="../bin_outputs/${{ matrix.platform }}/${{ matrix.platform }}-${{ matrix.entry }}${{ matrix.suffix }}" "bin/${{ matrix.entry }}"; then
+              SUCCESS=true
+            else
+              RETRY_COUNT=$((RETRY_COUNT+1))
+              echo "Build for ${{ matrix.entry }} failed. Retrying in 10 seconds..."
+              sleep 10
             fi
           done
+
+          if [ "$SUCCESS" = false ]; then
+            echo "Failed to build ${{ matrix.entry }} after $MAX_RETRIES attempts."
+            exit 1
+          fi
           
+          cd ..
           rm -rf build_staging
       - uses: actions/upload-artifact@v4
         with:
-          name: "binaries-${{ matrix.platform }}"
+          name: "binaries-${{ matrix.platform }}-${{ matrix.entry }}"
           path: "bin_outputs/${{ matrix.platform }}"
 
   release:
@@ -136,19 +137,24 @@ jobs:
           for platform in linux macos windows; do
             mkdir -p "dist_binary_${platform}"
 
-            # Check if artifact directory exists
-            if [ ! -d "artifacts/binaries-$platform" ]; then
-              echo "Error: Directory artifacts/binaries-$platform not found."
-              exit 1
-            fi
+            # Copy all entries for this platform from their specific artifact directories
+            # The artifacts are stored in artifacts/binaries-<platform>-<entry>/
+            cp artifacts/binaries-${platform}-*/* dist_binary_${platform}/
 
-            for f in artifacts/binaries-$platform/*; do
-              if [ -f "$f" ]; then
-                filename=$(basename "$f")
-                simple_name=$(echo "$filename" | cut -d'-' -f2-)
-                cp "$f" "dist_binary_${platform}/${simple_name}"
-              fi
-            done
+            cp scripts/install-bitmango.sh dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/utils/setup_env.sh dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/install-bitmango.command dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/setup-env.command dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/install-bitmango.ps1 dist_binary_${platform}/ 2>/dev/null || true
+            cp scripts/setup-env.ps1 dist_binary_${platform}/ 2>/dev/null || true
+            cp README-BINARY.md dist_binary_${platform}/README.md 2>/dev/null || true
+            cp LICENSE dist_binary_${platform}/ 2>/dev/null || true
+            cp SECURITY.md dist_binary_${platform}/ 2>/dev/null || true
+
+            cd dist_binary_${platform} && zip -r "../dist_final/bitmango-${VERSION}-${platform}-bin.zip" . && cd ..
+
+            rm -rf "dist_binary_${platform}"
+          done
 
       - name: Create Release
         run: |
