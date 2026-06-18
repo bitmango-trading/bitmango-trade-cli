@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-02-18T08:32:42.632474",
+  "feature": "Smart Stop",
+  "config": {
+    "latency_min": 0.2,
+    "latency_max": 0.8,
+    "error_rate": 0.2,
+    "dropout_rate": 0.16000000000000003
+  },
+  "initial_equity": 100000.86661380921,
+  "final_equity": 79999.96640037949,
+  "loss_pct": 20.000726884368596,
+  "success": false,
+  "error": "",
+  "is_breakage": true
+}

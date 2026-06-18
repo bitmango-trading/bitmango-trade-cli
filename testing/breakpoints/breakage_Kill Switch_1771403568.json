@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-02-18T08:32:48.103648",
+  "feature": "Kill Switch",
+  "config": {
+    "latency_min": 0.2,
+    "latency_max": 0.8,
+    "error_rate": 0.2,
+    "dropout_rate": 0.16000000000000003
+  },
+  "initial_equity": 100008.08156360406,
+  "final_equity": -20008.93862766483,
+  "loss_pct": 120.0073217232343,
+  "success": true,
+  "error": "",
+  "is_breakage": true
+}

@@ -1,0 +1,223 @@
+#!/usr/bin/env -S uv run python
+'''
+BitMango CLI - Unified Cryptocurrency Trading Interface
+'''
+import sys
+import os
+import importlib.util
+
+# 1. Aliasing Hyphenated Directory to Python Package
+this_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+parent_dir = os.path.abspath(os.path.join(this_dir, ".."))
+base_import_path = this_dir # Default fallback
+
+# Check if bitmango is already in sys.modules (compiled standalone case)
+if "bitmango" not in sys.modules:
+    cli_pkg_dir = None
+    if os.path.exists(os.path.join(this_dir, "bitmango-cli")):
+        cli_pkg_dir = os.path.join(this_dir, "bitmango-cli")
+        base_import_path = this_dir
+    elif os.path.exists(os.path.join(parent_dir, "bitmango-cli")):
+        cli_pkg_dir = os.path.join(parent_dir, "bitmango-cli")
+        base_import_path = parent_dir
+
+    if cli_pkg_dir:
+        spec = importlib.util.spec_from_file_location("bitmango", os.path.join(cli_pkg_dir, "__init__.py"))
+        bitmango = importlib.util.module_from_spec(spec)
+        sys.modules["bitmango"] = bitmango
+        spec.loader.exec_module(bitmango)
+        
+        # Ensure submodules are importable as bitmango.xxx
+        if base_import_path not in sys.path:
+            sys.path.insert(0, base_import_path)
+    else:
+        # If not found but we are in a standalone, it might already be importable
+        try:
+            import bitmango
+        except ImportError:
+            pass
+
+# Add repo root to path for other shared modules
+repo_root = os.path.abspath(os.path.join(base_import_path, ".."))
+if repo_root not in sys.path:
+    sys.path.insert(0, repo_root)
+
+# Base directory for other resource lookups
+base_dir = base_import_path
+
+# Now we can import from bitmango (aliased from bitmango-cli)
+from bitmango.config import get_config_dir
+config_dir = str(get_config_dir())
+if config_dir not in sys.path:
+    sys.path.insert(0, config_dir)
+
+
+# 2. IMPORTS
+from bitmango.cli.parser import get_parser, security_excepthook, disable_core_dumps
+from bitmango.cli.executor import execute_command
+from bitmango.output import output as output_manager, Verbosity, display_message
+from bitmango.exchange.exchange_errors import ExchangeError, UnsupportedError, handle_exchange_error, handle_unsupported_error
+from bitmango.exchange.risk_manager import RiskBreach, SecurityBreach
+from bitmango.messages import get_message
+
+class SilentStreamWrapper:
+    """Redirects all writes to nowhere when enabled."""
+    def __init__(self, original_stream):
+        self.original_stream = original_stream
+        self.enabled = False
+
+    def write(self, data):
+        if not self.enabled:
+            self.original_stream.write(data)
+
+    def flush(self):
+        if not self.enabled:
+            self.original_stream.flush()
+
+    def __getattr__(self, name):
+        return getattr(self.original_stream, name)
+
+def main():
+    # 3. HARDENING
+    sys.excepthook = security_excepthook
+    disable_core_dumps()
+    
+    # Silence stderr early if JSON mode is likely
+    stderr_wrapper = SilentStreamWrapper(sys.stderr)
+    sys.stderr = stderr_wrapper
+
+    # 4. PARSE ARGUMENTS EARLY (FOR HELP/PLUGINS)
+    core_commands = [
+        'entry', 'cancel', 'stop', 'exit', 'account', 'markets', 'history', 'leverage', 
+        'margin', 'transfer', 'funding', 'position-mode', 'ledger', 'open_orders', 
+        'query_order_book', 'close', 'close-all', 'ticker', 'ohlcv', 'trades', 
+        'funding-history', 'order-status', 'closed-orders', 'deposits', 'withdrawals', 'position-risk',
+        'fingerprint'
+    ]
+    
+    requested_cmd = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith('-') else None
+
+    # Handle fingerprint shortcut directly
+    if requested_cmd == 'fingerprint':
+        from bitmango.license import get_machine_id
+        from bitmango.output import start_boxed_mode, stop_boxed_mode
+        m_id = get_machine_id()
+        start_boxed_mode("HARDWARE FINGERPRINT")
+        display_message('info', "Use this unique key to authorize this machine in the Pro Dashboard.")
+        display_message('info', "")
+        display_message('info', f"BM-HASH-{m_id.upper()}")
+        display_message('info', "")
+        display_message('success', "Copy the full string above (including BM-HASH-).")
+        stop_boxed_mode()
+        sys.exit(0)
+
+    # Cinematic Help
+    if requested_cmd and 'help' in [a.lower() for a in sys.argv[2:]]:
+        try:
+            from bitmango.tutorial_engine import run_help
+            run_help(requested_cmd)
+            sys.exit(0)
+        except Exception: pass
+
+    # Early Output Config (Robust detection before full argparse)
+    for i, arg in enumerate(sys.argv):
+        if arg in ['-o', '--output']:
+            if i + 1 < len(sys.argv) and sys.argv[i+1] == 'json': 
+                output_manager.json_mode = True
+                stderr_wrapper.enabled = True
+        elif arg.startswith('--output='):
+            if arg.split('=')[1] == 'json': 
+                output_manager.json_mode = True
+                stderr_wrapper.enabled = True
+        elif arg == '-ojson':
+            output_manager.json_mode = True
+            stderr_wrapper.enabled = True
+        
+        if arg == '--no-color': output_manager.use_colors = False
+        if arg == '--debug': output_manager.verbosity = Verbosity.DEBUG
+        if arg in ['--verbose', '-v', '-vv', '-vvv']: output_manager.verbosity = Verbosity.VERBOSE
+
+    # 5. INITIALIZE PARSER & PLUGINS
+    parser, subparsers, parent_parser = get_parser(core_commands)
+    
+    try:
+        from bitmango.plugins.manager import PluginManager
+        pm = PluginManager()
+        pm.discover_and_load_all(subparsers, parent_parser)
+    except Exception as e:
+        display_message('debug', get_message("cli.debug_plugin_discovery_failed", error=e))
+
+    try:
+        args = parser.parse_args()
+    except SystemExit as e:
+        if output_manager.json_mode and e.code != 0:
+            # If argparse failed, we must manually render since we haven't reached execution
+            output_manager.render_result({"error": get_message("errors.invalid_args"), "status": "error", "exit_code": e.code})
+        raise
+
+    if not args.command:
+        parser.print_help()
+        sys.exit(0)
+
+    # 6. EXECUTION
+    try:
+        # Plugin Hooks (Pre-Execution)
+        try: 
+            pm.run_pre_command_hooks(args)
+        except (SystemExit, RiskBreach, SecurityBreach, PermissionError):
+            raise
+        except Exception as e:
+            display_message('debug', get_message("cli.debug_pre_command_failed", error=e))
+
+        if hasattr(args, 'func'):
+            # Plugin Command
+            result = args.func(args)
+        else:
+            # Core Command
+            if not args.exchange:
+                display_message('error', get_message("errors.exchange_required"))
+                sys.exit(1)
+            result = execute_command(args, output_manager)
+            
+            # Plugin Hooks (Post-Execution Result Transformation)
+            result = pm.transform_result(result, args)
+
+        # 7. OUTPUT
+        if result is None and not hasattr(args, 'func'):
+            raise Exception(output_manager.last_error if output_manager.last_error else get_message("errors.command_failed"))
+
+        output_manager.render_result(result)
+
+    except UnsupportedError as e:
+        if output_manager.json_mode:
+            output_manager.render_result({"error": str(e), "status": "unsupported"})
+        else: handle_unsupported_error(args.exchange, e)
+        sys.exit(99)
+    except (RiskBreach, SecurityBreach, PermissionError) as e:
+        status = "risk_breach" if isinstance(e, RiskBreach) else ("security_breach" if isinstance(e, SecurityBreach) else "permission_denied")
+        if output_manager.json_mode:
+            output_manager.render_result({"error": str(e), "status": status, "exit_code": 1})
+        else:
+            display_message('error', get_message("cli.error_critical", error=e))
+        sys.exit(1)
+    except ExchangeError as e:
+        if output_manager.json_mode:
+            output_manager.render_result({"error": str(e), "status": "error"})
+        else: handle_exchange_error(args.exchange, e.original_exception, args)
+    except SystemExit as e:
+        if output_manager.json_mode and e.code != 0:
+            msg = output_manager.last_error if output_manager.last_error else (str(e.code) if isinstance(e.code, str) else f"Process exited with code {e.code}")
+            output_manager.render_result({"error": msg, "exit_code": e.code, "status": "error"})
+            output_manager.last_error = None
+        raise
+    except Exception as e:
+        if output_manager.json_mode:
+            output_manager.render_result({"error": str(e), "status": "error", "exit_code": 1})
+        else:
+            display_message('error', get_message("cli.error_fatal", error=e))
+            from bitmango.output import display_traceback
+            display_traceback()
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()

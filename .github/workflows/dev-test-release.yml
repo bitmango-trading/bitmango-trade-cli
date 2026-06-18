@@ -1,0 +1,97 @@
+name: Dev Release and Validate
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Dev Version Tag (e.g. 2026-06-17-dev)'
+        required: true
+        default: 'dev-snapshot'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-encrypt:
+    name: Build & Encrypt - ${{ matrix.platform }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            suffix: ""
+          - os: windows-latest
+            platform: windows
+            suffix: ".exe"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Build Tools
+        shell: bash
+        run: |
+          pip install nuitka zstandard
+          if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+
+      - name: Build bitmango
+        uses: ./.github/actions/build-bitmango-binary
+        with:
+          entry_path: "bitmango-free/bin/bitmango"
+          output_filename: "bitmango${{ matrix.suffix }}"
+          platform: "${{ matrix.platform }}"
+
+      - name: Build bitmango-help
+        uses: ./.github/actions/build-bitmango-binary
+        with:
+          entry_path: "bitmango-free/bin/bitmango-help"
+          output_filename: "bitmango-help${{ matrix.suffix }}"
+          platform: "${{ matrix.platform }}"
+
+      - name: Encrypt Artifacts
+        shell: bash
+        run: |
+          mkdir -p bin_outputs
+          mv bitmango${{ matrix.suffix }} bitmango-help${{ matrix.suffix }} bin_outputs/
+          cd bin_outputs
+          zip -P "${{ secrets.DEV_RELEASE_PASSWORD }}" -r ../bitmango-dev-${{ matrix.platform }}.zip .
+        env:
+          DEV_RELEASE_PASSWORD: ${{ secrets.DEV_RELEASE_PASSWORD || 'bitmango-dev-test' }}
+
+      - name: Upload Encrypted Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-encrypted-${{ matrix.platform }}
+          path: bitmango-dev-${{ matrix.platform }}.zip
+
+  validate-linux:
+    needs: build-and-encrypt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Encrypted Linux Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: dev-encrypted-linux
+
+      - name: Decrypt and Prepare
+        run: |
+          unzip -P "${{ secrets.DEV_RELEASE_PASSWORD }}" bitmango-dev-linux.zip
+          chmod +x bitmango bitmango-help
+        env:
+          DEV_RELEASE_PASSWORD: ${{ secrets.DEV_RELEASE_PASSWORD || 'bitmango-dev-test' }}
+
+      - name: Run Binary Validation
+        run: |
+          # Use the absolute path to the decrypted binaries
+          export BITMANGO_EXECUTABLE="$(pwd)/bitmango"
+          export BITMANGO_HELP_EXECUTABLE="$(pwd)/bitmango-help"
+          
+          # 1. Help System (The original bug report)
+          echo "Testing Help System..."
+          $BITMANGO_HELP_EXECUTABLE setup
+          $BITMANGO_HELP_EXECUTABLE all
+          
+          # 2. Comprehensive Test Suite (includes simulator start/stop)
+          # We run the Python test runner but tell it to use the binary for bitmango commands
+          python3 testing/run_all_tests.py --exchange simulated

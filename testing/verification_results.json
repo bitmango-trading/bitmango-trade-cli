@@ -1,0 +1,1676 @@
+{
+  "date": "2026-03-04T06:30:00",
+  "sandbox": false,
+  "results": {
+    "binance": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T13:54:08.418123"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "",
+        "timestamp": "2026-02-25T13:54:13.662952"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "",
+        "timestamp": "2026-02-25T13:54:18.814635"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "",
+        "timestamp": "2026-02-25T13:54:23.992805"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "FAIL",
+        "message": "Fetched funding rate",
+        "error": "binance fetchFundingRate() supports linear and inverse contracts only",
+        "timestamp": "2026-02-25T13:54:29.318483"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:54:30.174487"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:54:30.982298"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:54:31.774211"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:54:32.622136"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:54:33.383490"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:54:34.117233"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T13:54:34.117320"
+      }
+    ],
+    "phemex": {
+      "sandbox": [
+        {
+          "feature": "Market Data",
+          "sub_feature": "Markets List",
+          "status": "PASS",
+          "message": "Fetched markets",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\nLoading available markets for phemex\n  USDT/TRY\n  USDT/BRZ\n  BTC/USDT\n  BTC/TRY\n  BTC/USDC\n  BTC/USDQ\n  BTC/USDR\n  BTC/BRZ\n  ETH/USDT\n  ETH/TRY\n  ETH/USDC\n  ETH/BRZ\n  ETH/BTC\n  XRP/USDT\n  XRP/USDC\n  LINK/USDT\n  LINK/USDC\n  XTZ/USDT\n  XTZ/USDC\n  LTC/USDT\n  ... and 1777 more.\n",
+          "timestamp": "2026-02-26T17:42:14.864392"
+        },
+        {
+          "feature": "Market Data",
+          "sub_feature": "Order Book",
+          "status": "PASS",
+          "message": "Fetched order book",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\nTop 5 ASKS (Sells) for BTC/USDT:USDT:\n  Price: 69843.2      | Amount: 0.059\n  Price: 69855.4      | Amount: 0.018\n  Price: 69860.5      | Amount: 0.003\n  Price: 70118.2      | Amount: 8.413\n  Price: 70120.0      | Amount: 0.001\n------------------------------\nTop 5 BIDS (Buys) for BTC/USDT:USDT:\n  Price: 67430.5      | Amount: 0.005\n  Price: 67336.8      | Amount: 0.001\n  Price: 67000.0      | Amount: 1.319\n  Price: 66911.3      | Amount: 0.004\n  Price: 66800.0      | Amount: 0.007\n",
+          "timestamp": "2026-02-26T17:42:17.887993"
+        },
+        {
+          "feature": "Market Data",
+          "sub_feature": "Ticker",
+          "status": "PASS",
+          "message": "Fetched ticker",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n  Symbol: BTC/USDT:USDT\n  Last:   69805.8\n  Bid:    None\n  Ask:    None\n",
+          "timestamp": "2026-02-26T17:42:21.154952"
+        },
+        {
+          "feature": "Market Data",
+          "sub_feature": "OHLCV",
+          "status": "PASS",
+          "message": "Fetched OHLCV",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\nTimestamp            | Open       | High       | Low        | Close      | Volume    \n--------------------------------------------------------------------------------\n2026-02-26 12:00:00  | 69805.8    | 69806.1    | 68022.5    | 69805.8    | 5.34      \n2026-02-26 13:00:00  | 69806.1    | 69806.1    | 69805.8    | 69805.8    | 3.35      \n2026-02-26 14:00:00  | 69805.8    | 69806.1    | 69805.8    | 69805.8    | 4.443     \n2026-02-26 15:00:00  | 69806.1    | 70118.2    | 67000.0    | 69805.8    | 3.947     \n2026-02-26 16:00:00  | 69805.8    | 69843.2    | 67437.3    | 69805.8    | 2.87      \n",
+          "timestamp": "2026-02-26T17:42:24.547362"
+        },
+        {
+          "feature": "Market Data",
+          "sub_feature": "Funding",
+          "status": "PASS",
+          "message": "Fetched funding rate",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n",
+          "timestamp": "2026-02-26T17:42:28.218365"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Balance",
+          "status": "PASS",
+          "message": "Fetched balance",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n  USDT : Total: 1089.954326026 Free: 869.659068286 Used: 220.29525774\n",
+          "timestamp": "2026-02-26T17:42:30.811242"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Positions",
+          "status": "PASS",
+          "message": "Fetched positions",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n[WARNING] No open positions found on Phemex.\n",
+          "timestamp": "2026-02-26T17:42:33.281128"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Ledger",
+          "status": "PASS",
+          "message": "Fetched ledger",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n[WARNING] No ledger entries or fallback data found for USDT\n",
+          "timestamp": "2026-02-26T17:42:37.431294"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Trades",
+          "status": "PASS",
+          "message": "Fetched trades",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n[WARNING] No trades found\n",
+          "timestamp": "2026-02-26T17:42:40.135058"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Funding History",
+          "status": "PASS",
+          "message": "Fetched funding history",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n  2025-09-06T16:00:00.485Z - BTCUSDT - Rate: None - Amount: 0.08826832\n",
+          "timestamp": "2026-02-26T17:42:43.181500"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Order Status",
+          "status": "PASS",
+          "message": "Fetched order status",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n  ID: None | Status: UNKNOWN | UNKNOWN UNKNOWN\n  Filled: None/None @ None\n",
+          "timestamp": "2026-02-26T17:42:46.052502"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Closed Orders",
+          "status": "PASS",
+          "message": "Fetched closed orders",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n  2026-02-22T22:23:49.794Z | 9cd31a3f-1b00-4c2a-bd70-402ab135f7fa | BUY   | CANCELED   | Filled: 0.001/0.001\n  2026-02-22T22:31:34.818Z | 5602e4b0-f4d4-4606-b737-c5939f3cf6fb | BUY   | CANCELED   | Filled: 0.001/0.001\n  2026-02-22T22:31:40.401Z | 972df118-c9cb-4c15-ac43-69de7c07c17e | BUY   | CANCELED   | Filled: 0.001/0.001\n  2026-02-22T22:36:16.353Z | 1f10e745-4355-41f8-8944-2de9f29e9317 | BUY   | CANCELED   | Filled: 0.001/0.001\n  2026-02-22T22:36:21.250Z | 7982fcb1-10cd-466a-bae3-a44d8b2300e1 | BUY   | CANCELED   | Filled: 0.001/0.001\n",
+          "timestamp": "2026-02-26T17:42:49.043186"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Deposits",
+          "status": "PASS",
+          "message": "Fetched deposits",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n[WARNING] No deposits found.\n",
+          "timestamp": "2026-02-26T17:42:52.005737"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Withdrawals",
+          "status": "PASS",
+          "message": "Fetched withdrawals",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n[WARNING] No withdrawals found.\n",
+          "timestamp": "2026-02-26T17:42:55.090908"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Position Risk",
+          "status": "PASS",
+          "message": "Fetched position risk",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n",
+          "timestamp": "2026-02-26T17:42:57.947025"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Set Leverage",
+          "status": "PASS",
+          "message": "Set leverage",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n",
+          "timestamp": "2026-02-26T17:43:00.894755"
+        },
+        {
+          "feature": "Trading",
+          "sub_feature": "Limit Entry",
+          "status": "PASS",
+          "message": "Placed limit buy",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\n[ERROR] An unexpected error occurred during order execution: 'PhemexAccountPositions' object has no attribute '_get_position_mode'\n[ERROR]   Traceback (most recent call last):\n[ERROR]     File \"/home/trading/git/bitmango-trade-cli-dev/library/exchange/order_futures.py\", line 32, in execute_order\n[ERROR]       order_result = method_to_call(args)\n[ERROR]                      ^^^^^^^^^^^^^^^^^^^^\n[ERROR]     File \"/home/trading/git/bitmango-trade-cli-dev/library/exchange/phemex/account_open_positions.py\", line 118, in entry\n[ERROR]       pos_mode = self._get_position_mode(symbol)\n[ERROR]                  ^^^^^^^^^^^^^^^^^^^^^^^\n[ERROR]   AttributeError: 'PhemexAccountPositions' object has no attribute '_get_position_mode'\n",
+          "timestamp": "2026-02-26T17:43:03.111097"
+        },
+        {
+          "feature": "Trading",
+          "sub_feature": "Cancel All",
+          "status": "PASS",
+          "message": "Cancelled orders",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[WARNING] SECURITY NOTE: Using 'api_keys.py' for phemex.\nVerifying Cancellation for BTC/USDT:USDT\n[WARNING] Waiting for cancellation to propagate... (Attempt 1/5)\n[WARNING] Waiting for cancellation to propagate... (Attempt 2/5)\n[WARNING] Waiting for cancellation to propagate... (Attempt 3/5)\n[WARNING] Waiting for cancellation to propagate... (Attempt 4/5)\n[WARNING] Waiting for cancellation to propagate... (Attempt 5/5)\n[WARNING] Cancellation could not be confirmed. Orders may still be active\n",
+          "timestamp": "2026-02-26T17:43:18.611760"
+        }
+      ],
+      "live": []
+    },
+    "bybit": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T13:55:12.992032"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "",
+        "timestamp": "2026-02-25T13:55:17.672307"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "",
+        "timestamp": "2026-02-25T13:55:22.600026"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "",
+        "timestamp": "2026-02-25T13:55:27.541423"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "PASS",
+        "message": "Fetched funding rate",
+        "error": "",
+        "timestamp": "2026-02-25T13:55:32.405693"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:55:33.267105"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:55:34.162127"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:55:35.050885"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:55:35.885263"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:55:36.749532"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:55:37.614675"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T13:55:37.614727"
+      }
+    ],
+    "mexc": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T13:55:40.601751"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "",
+        "timestamp": "2026-02-25T13:55:43.887740"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "",
+        "timestamp": "2026-02-25T13:55:47.031554"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "",
+        "timestamp": "2026-02-25T13:55:50.175271"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "FAIL",
+        "message": "Fetched funding rate",
+        "error": "mexc {\"success\":false,\"code\":1001,\"message\":\"Contract does not exist\"}",
+        "timestamp": "2026-02-25T13:55:53.358776"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:55:54.202931"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:55:54.994056"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:55:55.788236"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:55:56.550684"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:55:57.355845"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:55:58.116409"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T13:55:58.116492"
+      }
+    ],
+    "bitget": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T13:56:02.740038"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "",
+        "timestamp": "2026-02-25T13:56:07.422717"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "",
+        "timestamp": "2026-02-25T13:56:12.132758"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "",
+        "timestamp": "2026-02-25T13:56:16.878761"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "PASS",
+        "message": "Fetched funding rate",
+        "error": "",
+        "timestamp": "2026-02-25T13:56:21.684436"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:56:22.535952"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:56:23.369263"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:56:24.344065"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:56:25.223778"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:56:26.107212"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:56:26.949730"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T13:56:26.949780"
+      }
+    ],
+    "okx": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T13:56:30.371660"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "",
+        "timestamp": "2026-02-25T13:56:33.755034"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "",
+        "timestamp": "2026-02-25T13:56:37.249521"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "",
+        "timestamp": "2026-02-25T13:56:40.271475"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "PASS",
+        "message": "Fetched funding rate",
+        "error": "",
+        "timestamp": "2026-02-25T13:56:43.392006"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:56:44.681174"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:56:45.590800"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:56:46.425891"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:56:47.274994"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:56:48.091909"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:56:48.925711"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T13:56:48.925756"
+      }
+    ],
+    "hyperliquid": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T13:57:00.761265"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "ERROR: Error querying order book: hyperliquid does not have market symbol BTC/USDT\n",
+        "timestamp": "2026-02-25T13:57:12.211061"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "ERROR: Error fetching ticker: hyperliquid does not have market symbol BTC/USDT\n",
+        "timestamp": "2026-02-25T13:57:24.031881"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "ERROR: Error fetching OHLCV: hyperliquid does not have market symbol BTC/USDT\n",
+        "timestamp": "2026-02-25T13:57:36.747256"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "FAIL",
+        "message": "Fetched funding rate",
+        "error": "hyperliquid does not have market symbol BTC/USDT",
+        "timestamp": "2026-02-25T13:57:48.104066"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:57:49.031504"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:57:49.902442"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:57:50.783871"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:57:51.643417"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:57:52.481647"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:57:53.249529"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T13:57:53.249617"
+      }
+    ],
+    "bitfinex": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T13:57:56.166582"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "",
+        "timestamp": "2026-02-25T13:57:59.447393"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "",
+        "timestamp": "2026-02-25T13:58:03.151731"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "",
+        "timestamp": "2026-02-25T13:58:06.916556"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "FAIL",
+        "message": "Fetched funding rate",
+        "error": "bitfinex fetchFundingRate() supports contract markets only",
+        "timestamp": "2026-02-25T13:58:09.977585"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:58:10.937874"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:58:11.758916"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:58:12.699340"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:58:13.593836"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:58:14.660518"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:58:15.612665"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T13:58:15.612733"
+      }
+    ],
+    "dydx": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T13:58:18.553049"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "ERROR: Error querying order book: dydx does not have market symbol BTC/USDT:USDC\n",
+        "timestamp": "2026-02-25T13:58:20.591417"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "ERROR: Error fetching ticker: dydx fetchTicker() is not supported yet\n",
+        "timestamp": "2026-02-25T13:58:22.575882"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "ERROR: Error fetching OHLCV: dydx does not have market symbol BTC/USDT:USDC\n",
+        "timestamp": "2026-02-25T13:58:24.262346"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "FAIL",
+        "message": "Fetched funding rate",
+        "error": "dydx fetchFundingRate() is not supported yet",
+        "timestamp": "2026-02-25T13:58:25.710003"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:58:26.609802"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:58:27.492959"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:58:28.345451"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:58:29.171540"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:58:30.054070"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:58:30.921233"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T13:58:30.921277"
+      }
+    ],
+    "gateio": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T13:58:45.262419"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "",
+        "timestamp": "2026-02-25T13:59:04.938089"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "",
+        "timestamp": "2026-02-25T13:59:17.549797"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "",
+        "timestamp": "2026-02-25T13:59:32.568427"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "FAIL",
+        "message": "Fetched funding rate",
+        "error": "gateio fetchFundingRate() supports swap contracts only",
+        "timestamp": "2026-02-25T13:59:46.111930"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:59:47.317897"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:59:48.355662"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:59:49.396149"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:59:50.351551"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:59:51.475557"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T13:59:52.260139"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T13:59:52.260191"
+      }
+    ],
+    "htx": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T14:00:03.583341"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "",
+        "timestamp": "2026-02-25T14:00:17.434086"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "",
+        "timestamp": "2026-02-25T14:00:31.723741"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "",
+        "timestamp": "2026-02-25T14:00:47.819990"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "FAIL",
+        "message": "Fetched funding rate",
+        "error": "htx fetchFundingRate() supports inverse and linear swaps only",
+        "timestamp": "2026-02-25T14:01:08.943962"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:01:17.075937"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:01:18.011895"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:01:19.763358"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:01:21.846105"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:01:25.950988"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:01:35.973241"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T14:01:35.979091"
+      }
+    ],
+    "kucoin": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T14:01:40.901642"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "",
+        "timestamp": "2026-02-25T14:01:45.828124"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "",
+        "timestamp": "2026-02-25T14:01:49.594522"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "",
+        "timestamp": "2026-02-25T14:01:52.667293"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "FAIL",
+        "message": "Fetched funding rate",
+        "error": "kucoin {\"msg\":\"Funding Rate Is Not Supported\",\"code\":\"103041\"}",
+        "timestamp": "2026-02-25T14:01:56.932645"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:01:57.917237"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:01:59.012711"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:00.034466"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:01.047501"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:01.849563"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:02.933664"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:02.933752"
+      }
+    ],
+    "kraken": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:05.467976"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:08.752535"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:11.594236"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:14.725668"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "FAIL",
+        "message": "Fetched funding rate",
+        "error": "kraken fetchFundingRate() is not supported yet",
+        "timestamp": "2026-02-25T14:02:16.938030"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:17.875877"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:18.782819"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:19.819852"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:20.552449"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:21.708364"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:22.783385"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:22.783473"
+      }
+    ],
+    "coinbase": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:26.126461"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:29.922522"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:33.501012"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:37.527996"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "FAIL",
+        "message": "Fetched funding rate",
+        "error": "coinbase fetchFundingRate() is not supported yet",
+        "timestamp": "2026-02-25T14:02:41.156865"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:42.259409"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:43.347907"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:44.405642"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:45.284387"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:46.427378"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:02:47.190163"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:47.190212"
+      }
+    ],
+    "lbank": [
+      {
+        "feature": "Market Data",
+        "sub_feature": "Markets List",
+        "status": "PASS",
+        "message": "Fetched markets",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:51.327530"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Order Book",
+        "status": "PASS",
+        "message": "Fetched order book",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:55.524695"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Ticker",
+        "status": "PASS",
+        "message": "Fetched ticker",
+        "error": "",
+        "timestamp": "2026-02-25T14:02:59.219959"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "OHLCV",
+        "status": "PASS",
+        "message": "Fetched OHLCV",
+        "error": "",
+        "timestamp": "2026-02-25T14:03:03.076454"
+      },
+      {
+        "feature": "Market Data",
+        "sub_feature": "Funding",
+        "status": "FAIL",
+        "message": "Fetched funding rate",
+        "error": "lbank GET https://api.lbank.info/v2/withdrawConfigs.do 429 Too Many Requests <!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 8]>    <html class=\"no-js ie8 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if gt IE 8]><!--> <html class=\"no-js\" lang=\"en-US\"> <!--<![endif]-->\n<head>\n<title>Access denied | api.lbank.info used Cloudflare to restrict access</title>\n<meta charset=\"UTF-8\" />\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" />\n<meta name=\"robots\" content=\"noindex, nofollow\" />\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />\n<link rel=\"stylesheet\" id=\"cf_styles-css\" href=\"/cdn-cgi/styles/main.css\" />\n\n\n<script>\n(function(){if(document.addEventListener&&window.XMLHttpRequest&&JSON&&JSON.stringify){var e=function(a){var c=document.getElementById(\"error-feedback-survey\"),d=document.getElementById(\"error-feedback-success\"),b=new XMLHttpRequest;a={event:\"feedback clicked\",properties:{errorCode:1015,helpful:a,version:1}};b.open(\"POST\",\"https://sparrow.cloudflare.com/api/v1/event\");b.setRequestHeader(\"Content-Type\",\"application/json\");b.setRequestHeader(\"Sparrow-Source-Key\",\"c771f0e4b54944bebf4261d44bd79a1e\");\nb.send(JSON.stringify(a));c.classList.add(\"feedback-hidden\");d.classList.remove(\"feedback-hidden\")};document.addEventListener(\"DOMContentLoaded\",function(){var a=document.getElementById(\"error-feedback\"),c=document.getElementById(\"feedback-button-yes\"),d=document.getElementById(\"feedback-button-no\");\"classList\"in a&&(a.classList.remove(\"feedback-hidden\"),c.addEventListener(\"click\",function(){e(!0)}),d.addEventListener(\"click\",function(){e(!1)}))})}})();\n</script>\n\n<script defer src=\"https://performance.radar.cloudflare.com/beacon.js\"></script>\n</head>\n<body>\n  <div id=\"cf-wrapper\">\n    <div class=\"cf-alert cf-alert-error cf-cookie-error hidden\" id=\"cookie-alert\" data-translate=\"enable_cookies\">Please enable cookies.</div>\n    <div id=\"cf-error-details\" class=\"p-0\">\n      <header class=\"mx-auto pt-10 lg:pt-6 lg:px-8 w-240 lg:w-full mb-15 antialiased\">\n         <h1 class=\"inline-block md:block mr-2 md:mb-2 font-light text-60 md:text-3xl text-black-dark leading-tight\">\n           <span data-translate=\"error\">Error</span>\n           <span>1015</span>\n         </h1>\n         <span class=\"inline-block md:block heading-ray-id font-mono text-15 lg:text-sm lg:leading-relaxed\">Ray ID: 9d37be779a426421 &bull;</span>\n         <span class=\"inline-block md:block heading-ray-id font-mono text-15 lg:text-sm lg:leading-relaxed\">2026-02-25 14:03:04 UTC</span>\n        <h2 class=\"text-gray-600 leading-1.3 text-3xl lg:text-2xl font-light\">You are being rate limited</h2>\n      </header>\n\n      <section class=\"w-240 lg:w-full mx-auto mb-8 lg:px-8\">\n          <div id=\"what-happened-section\" class=\"w-1/2 md:w-full\">\n            <h2 class=\"text-3xl leading-tight font-normal mb-4 text-black-dark antialiased\" data-translate=\"what_happened\">What happened?</h2>\n            <p>The owner of this website (api.lbank.info) has banned you temporarily from accessing this website.</p>\n            \n              <p>Please see <a rel=\"noopener noreferrer\" href=\"https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1015/\" target=\"_blank\">https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1015/</a> for more details.</p>\n            \n          </div>\n\n          \n      </section>\n\n      <div class=\"feedback-hidden py-8 text-center\" id=\"error-feedback\">\n    <div id=\"error-feedback-survey\" class=\"footer-line-wrapper\">\n        Was this page helpful?\n        <button class=\"border border-solid bg-white cf-button cursor-pointer ml-4 px-4 py-2 rounded\" id=\"feedback-button-yes\" type=\"button\">Yes</button>\n        <button class=\"border border-solid bg-white cf-button cursor-pointer ml-4 px-4 py-2 rounded\" id=\"feedback-button-no\" type=\"button\">No</button>\n    </div>\n    <div class=\"feedback-success feedback-hidden\" id=\"error-feedback-success\">\n        Thank you for your feedback!\n    </div>\n</div>\n\n\n      <div class=\"cf-error-footer cf-wrapper w-240 lg:w-full py-10 sm:py-4 sm:px-8 mx-auto text-center sm:text-left border-solid border-0 border-t border-gray-300\">\n  <p class=\"text-13\">\n    <span class=\"cf-footer-item sm:block sm:mb-1\">Cloudflare Ray ID: <strong class=\"font-semibold\">9d37be779a426421</strong></span>\n    <span class=\"cf-footer-separator sm:hidden\">&bull;</span>\n    <span id=\"cf-footer-item-ip\" class=\"cf-footer-item hidden sm:block sm:mb-1\">\n      Your IP:\n      <button type=\"button\" id=\"cf-footer-ip-reveal\" class=\"cf-footer-ip-reveal-btn\">Click to reveal</button>\n      <span class=\"hidden\" id=\"cf-footer-ip\">188.29.66.239</span>\n      <span class=\"cf-footer-separator sm:hidden\">&bull;</span>\n    </span>\n    <span class=\"cf-footer-item sm:block sm:mb-1\"><span>Performance &amp; security by</span> <a rel=\"noopener noreferrer\" href=\"https://www.cloudflare.com/5xx-error-landing\" id=\"brand_link\" target=\"_blank\">Cloudflare</a></span>\n    \n  </p>\n  <script>(function(){function d(){var b=a.getElementById(\"cf-footer-item-ip\"),c=a.getElementById(\"cf-footer-ip-reveal\");b&&\"classList\"in b&&(b.classList.remove(\"hidden\"),c.addEventListener(\"click\",function(){c.classList.add(\"hidden\");a.getElementById(\"cf-footer-ip\").classList.remove(\"hidden\")}))}var a=document;document.addEventListener&&a.addEventListener(\"DOMContentLoaded\",d)})();</script>\n</div><!-- /.error-footer -->\n\n\n    </div><!-- /#cf-error-details -->\n  </div><!-- /#cf-wrapper -->\n\n  <script>\n  window._cf_translation = {};\n  \n  \n</script>\n\n</body>\n</html>",
+        "timestamp": "2026-02-25T14:03:04.613527"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Balance",
+        "status": "UNTESTED",
+        "message": "Fetched balance",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:03:05.708285"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Positions",
+        "status": "UNTESTED",
+        "message": "Fetched positions",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:03:06.621620"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Ledger",
+        "status": "UNTESTED",
+        "message": "Fetched ledger",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:03:07.639307"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Trades",
+        "status": "UNTESTED",
+        "message": "Fetched trades",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:03:08.353351"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Funding History",
+        "status": "UNTESTED",
+        "message": "Fetched funding history",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:03:09.094352"
+      },
+      {
+        "feature": "Account",
+        "sub_feature": "Set Leverage",
+        "status": "UNTESTED",
+        "message": "Set leverage",
+        "error": "API keys not configured",
+        "timestamp": "2026-02-25T14:03:10.080948"
+      },
+      {
+        "feature": "Trading",
+        "sub_feature": "All Trading Features",
+        "status": "UNTESTED",
+        "message": "Skipping trading tests on Live",
+        "error": "",
+        "timestamp": "2026-02-25T14:03:10.080993"
+      }
+    ],
+    "simulated": {
+      "sandbox": [
+        {
+          "feature": "Market Data",
+          "sub_feature": "Markets List",
+          "status": "PASS",
+          "message": "Fetched markets",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\nSimulated Markets Loaded\n",
+          "timestamp": "2026-02-26T05:48:33.099097"
+        },
+        {
+          "feature": "Market Data",
+          "sub_feature": "Order Book",
+          "status": "PASS",
+          "message": "Fetched order book",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[ERROR] Error querying order book: 'MockCCXT' object has no attribute 'fetch_order_book'\n",
+          "timestamp": "2026-02-26T05:48:33.975824"
+        },
+        {
+          "feature": "Market Data",
+          "sub_feature": "Ticker",
+          "status": "PASS",
+          "message": "Fetched ticker",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n",
+          "timestamp": "2026-02-26T05:48:35.191834"
+        },
+        {
+          "feature": "Market Data",
+          "sub_feature": "OHLCV",
+          "status": "PASS",
+          "message": "Fetched OHLCV",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n",
+          "timestamp": "2026-02-26T05:48:36.237264"
+        },
+        {
+          "feature": "Market Data",
+          "sub_feature": "Funding",
+          "status": "PASS",
+          "message": "Fetched funding rate",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n",
+          "timestamp": "2026-02-26T05:48:37.271501"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Balance",
+          "status": "PASS",
+          "message": "Fetched balance",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[SUCCESS] Simulated Account Balance:\n[SUCCESS]   USDT: 100461.20917878182\n",
+          "timestamp": "2026-02-26T05:48:38.456440"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Positions",
+          "status": "PASS",
+          "message": "Fetched positions",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[SUCCESS] Simulated Positions:\n",
+          "timestamp": "2026-02-26T05:48:39.384512"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Ledger",
+          "status": "PASS",
+          "message": "Fetched ledger",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n",
+          "timestamp": "2026-02-26T05:48:40.398110"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Trades",
+          "status": "PASS",
+          "message": "Fetched trades",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n",
+          "timestamp": "2026-02-26T05:48:41.721281"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Funding History",
+          "status": "PASS",
+          "message": "Fetched funding history",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n",
+          "timestamp": "2026-02-26T05:48:42.924793"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Order Status",
+          "status": "PASS",
+          "message": "Fetched order status",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\nFetching simulated order status for test-id\n",
+          "timestamp": "2026-02-26T05:48:43.778499"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Closed Orders",
+          "status": "PASS",
+          "message": "Fetched closed orders",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\nFetching simulated closed orders\n",
+          "timestamp": "2026-02-26T05:48:44.520890"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Deposits",
+          "status": "PASS",
+          "message": "Fetched deposits",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n",
+          "timestamp": "2026-02-26T05:48:45.260413"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Withdrawals",
+          "status": "PASS",
+          "message": "Fetched withdrawals",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n",
+          "timestamp": "2026-02-26T05:48:45.960582"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Position Risk",
+          "status": "PASS",
+          "message": "Fetched position risk",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n",
+          "timestamp": "2026-02-26T05:48:46.705068"
+        },
+        {
+          "feature": "Account",
+          "sub_feature": "Set Leverage",
+          "status": "PASS",
+          "message": "Set leverage",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n",
+          "timestamp": "2026-02-26T05:48:47.431508"
+        },
+        {
+          "feature": "Trading",
+          "sub_feature": "Limit Entry",
+          "status": "PASS",
+          "message": "Placed limit buy",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n[SUCCESS] Simulated order executed: 29\n",
+          "timestamp": "2026-02-26T05:48:48.610058"
+        },
+        {
+          "feature": "Trading",
+          "sub_feature": "Cancel All",
+          "status": "PASS",
+          "message": "Cancelled orders",
+          "error": "Loading plugin: Pro Smart Stops\nLoading plugin: Hello World\nLoading plugin: Pro Universal Kill Switch\nLoading plugin: Pro Accounting & Reporting\nLoading plugin: Pro Advanced Orders\n",
+          "timestamp": "2026-02-26T05:48:50.711984"
+        }
+      ],
+      "live": []
+    }
+  }
+}

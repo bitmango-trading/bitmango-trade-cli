@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-02-18T08:59:25.170898",
+  "feature": "Polling Stop (Legacy)",
+  "config": {
+    "latency_min": 0.2,
+    "latency_max": 0.8,
+    "error_rate": 0.2,
+    "dropout_rate": 0.16000000000000003
+  },
+  "initial_equity": 99984.00970250086,
+  "final_equity": 39979.59500352701,
+  "loss_pct": 60.01401111789277,
+  "success": false,
+  "error": "Traceback (most recent call last):\n  File \"/home/trading/git/bitmango-trade-cli-dev/./bitmango\", line 334, in <module>\n    main()\n  File \"/home/trading/git/bitmango-trade-cli-dev/./bitmango\", line 118, in main\n    stop_parser = subparsers.add_parser('stop', help='Stop-related commands', parents=[parent_parser])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.11/argparse.py\", line 1197, in add_parser\n    raise ArgumentError(self, _('conflicting subparser: %s') % name)\nargparse.ArgumentError: argument command: conflicting subparser: stop\n",
+  "is_breakage": true
+}
