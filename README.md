@@ -1,5 +1,12 @@
 # bitmango Trade CLI 🥭
 
+## 📦 Releases
+
+Pre-built binaries and source packages are available on the **[Releases page](https://github.com/bitmango-trading/bitmango-trade-cli/releases)**.
+
+- **Binary:** Standalone executables for macOS, Windows, and Linux.
+- **SDK (Python Source):** Clone the repo and install via `pip install -e .` for development and integration.
+
 ---
 
 ## What If Your Tools Matched Your Ambition?
@@ -142,7 +149,7 @@ BitMango currently supports the Top 15 global exchanges by volume. Progress indi
 | **PHEMEX** | ██████████ | 100% |
 | **SIMULATED** | ██████████ | 100% |
 
-*Detailed verification reports for each exchange are available in the **[Implementation Roadmap Wiki](docs/wiki/09-Implementation-Roadmap.md)**.*
+*Detailed verification reports for each exchange are available in the **[Implementation Roadmap Wiki](wiki/09-Implementation-Roadmap.md)**.*
 
 ---
 
@@ -162,12 +169,12 @@ BitMango offers two ways to run the tool, balancing security and performance:
 
 
 ### For Humans 🧑‍💻
-1. **Clone the Repo:** `git clone https://github.com/bitmango-trade/bitmango-trade-cli-dev.git`
+1. **Clone the Repo:** `git clone https://github.com/bitmango-trading/bitmango-trade-cli.git`
 2. **Setup Your Vault:** `./bitmango-vault --setup` (Securely store your API keys)
 3. **Explore:** Type `./bitmango-help all`
 
 ### For AI Bots 🤖
-1. **Clone the Repo:** `git clone https://github.com/bitmango-trade/bitmango-trade-cli-dev.git`
+1. **Clone the Repo:** `git clone https://github.com/bitmango-trading/bitmango-trade-cli.git`
 2. **Setup Your Vault:** `./bitmango-vault --setup`
 3. **Use the SDK:** `from bitmango import BitMango`
 4. **Direct the AI:** *"Build a bot using the bitmango SDK on the simulated exchange"*
@@ -176,12 +183,12 @@ BitMango offers two ways to run the tool, balancing security and performance:
 
 ## 📖 The Trading Playbook (Wiki)
 
-For comprehensive guides and advanced strategy deep-dives, visit our **[Official Wiki](docs/wiki/00-Home.md)**.
+For comprehensive guides and advanced strategy deep-dives, visit our **[Official Wiki](wiki/00-Home.md)**.
 
-*   **[Deployment Guide](docs/wiki/01-Getting-Started.md)** - Get up and running in 60 seconds.
-*   **[Pro Execution Strategy](docs/wiki/05-Advanced-Strategies.md)** - Mastering TWAP and Stealth Stops.
-*   **[Bot Integration (JSON)](docs/wiki/06-Bot-Integration.md)** - Hook BitMango into your Python/Node/Go bots.
-*   **[Risk Hardening](docs/wiki/07-Risk-Management.md)** - Setting up the global Kill-Switch.
+*   **[Deployment Guide](wiki/01-Getting-Started.md)** - Get up and running in 60 seconds.
+*   **[Pro Execution Strategy](wiki/05-Advanced-Strategies.md)** - Mastering TWAP and Stealth Stops.
+*   **[Bot Integration (JSON)](wiki/06-Bot-Integration.md)** - Hook BitMango into your Python/Node/Go bots.
+*   **[Risk Hardening](wiki/07-Risk-Management.md)** - Setting up the global Kill-Switch.
 
 ---
 
