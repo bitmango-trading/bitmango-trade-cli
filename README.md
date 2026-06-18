@@ -5,7 +5,7 @@
 Pre-built binaries and source packages are available on the **[Releases page](https://github.com/bitmango-trading/bitmango-trade-cli/releases)**.
 
 - **Binary:** Standalone executables for macOS, Windows, and Linux.
-- **SDK (Python Source):** Clone the repo and install via `pip install -e .` for development and integration.
+- **SDK (Python Source):** Clone the repo for development and integration.
 
 ---
 
@@ -19,7 +19,7 @@ This is where trades are won—or lost.
 
 bitmango gives you direct, precise control over all three. No distractions. No friction. Just clean, repeatable execution that matches your intent every time.
 
-![BitMango Demo](docs/assets/demo.svg)
+![BitMango Demo](https://github.com/bitmango-trading/bitmango-trade-cli/blob/main/assets/demo.svg)
 
 ---
 
