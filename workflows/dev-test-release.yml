@@ -33,21 +33,25 @@ jobs:
           pip install nuitka zstandard
           if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
 
-      - name: Build Binaries (Nuitka)
-        shell: bash
-        run: |
-          mkdir -p bin_outputs
-          for entry in bitmango bitmango-help; do
-            python -m nuitka --standalone --onefile --assume-yes-for-downloads \
-              --include-package=tutorials \
-              --output-filename=$entry${{ matrix.suffix }} \
-              bitmango-free/bin/$entry
-            mv $entry${{ matrix.suffix }} bin_outputs/
-          done
+      - name: Build bitmango
+        uses: ./.github/actions/build-bitmango-binary
+        with:
+          entry_path: "bitmango-free/bin/bitmango"
+          output_filename: "bitmango${{ matrix.suffix }}"
+          platform: "${{ matrix.platform }}"
+
+      - name: Build bitmango-help
+        uses: ./.github/actions/build-bitmango-binary
+        with:
+          entry_path: "bitmango-free/bin/bitmango-help"
+          output_filename: "bitmango-help${{ matrix.suffix }}"
+          platform: "${{ matrix.platform }}"
 
       - name: Encrypt Artifacts
         shell: bash
         run: |
+          mkdir -p bin_outputs
+          mv bitmango${{ matrix.suffix }} bitmango-help${{ matrix.suffix }} bin_outputs/
           cd bin_outputs
           zip -P "${{ secrets.DEV_RELEASE_PASSWORD }}" -r ../bitmango-dev-${{ matrix.platform }}.zip .
         env:

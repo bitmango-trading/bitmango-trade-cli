@@ -70,27 +70,32 @@ jobs:
           maturin build --release --out ../../dist_release
           cd ../../
 
-      - name: Build Standalone Binaries (Nuitka)
+      - name: Build bitmango
+        uses: ./.github/actions/build-bitmango-binary
+        with:
+          entry_path: "bitmango-free/bin/bitmango"
+          output_filename: "bitmango${{ matrix.suffix }}"
+          platform: "${{ matrix.platform }}"
+
+      - name: Build bitmango-vault
+        uses: ./.github/actions/build-bitmango-binary
+        with:
+          entry_path: "bitmango-free/bin/bitmango-vault"
+          output_filename: "bitmango-vault${{ matrix.suffix }}"
+          platform: "${{ matrix.platform }}"
+
+      - name: Build bitmango-help
+        uses: ./.github/actions/build-bitmango-binary
+        with:
+          entry_path: "bitmango-free/bin/bitmango-help"
+          output_filename: "bitmango-help${{ matrix.suffix }}"
+          platform: "${{ matrix.platform }}"
+
+      - name: Stage binaries
         shell: bash
         run: |
-          mkdir -p dist_release
-          for entry in bitmango bitmango-vault bitmango-help; do
-            python -m nuitka --standalone --onefile --assume-yes-for-downloads \
-              --include-package=tutorials \
-              --output-filename=$entry${{ matrix.suffix }} \
-              --jobs=2 \
-              bitmango-free/bin/$entry
-          done
-          
-          # Move binaries to platform-specific directory
           mkdir -p bin_outputs/${{ matrix.platform }}
-          for entry in bitmango bitmango-vault bitmango-help; do
-            if [ -f "$entry.dist/$entry${{ matrix.suffix }}" ]; then
-              mv "$entry.dist/$entry${{ matrix.suffix }}" bin_outputs/${{ matrix.platform }}/
-            elif [ -f "$entry${{ matrix.suffix }}" ]; then
-              mv "$entry${{ matrix.suffix }}" bin_outputs/${{ matrix.platform }}/
-            fi
-          done
+          mv bitmango${{ matrix.suffix }} bitmango-vault${{ matrix.suffix }} bitmango-help${{ matrix.suffix }} bin_outputs/${{ matrix.platform }}/
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4

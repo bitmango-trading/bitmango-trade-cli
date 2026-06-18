@@ -1,0 +1,41 @@
+name: 'Build BitMango Binary'
+description: 'Builds a standalone BitMango binary using Nuitka'
+inputs:
+  entry_path:
+    description: 'Path to the entry point script'
+    required: true
+  output_filename:
+    description: 'Name of the resulting binary'
+    required: true
+  platform:
+    description: 'Target platform (linux, windows, macos)'
+    required: true
+  nuitka_jobs:
+    description: 'Number of parallel jobs for Nuitka'
+    required: false
+    default: '2'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Nuitka and dependencies
+      shell: bash
+      run: |
+        pip install nuitka zstandard
+        if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+
+    - name: Build Standalone Binary
+      shell: bash
+      run: |
+        # Use --jobs=1 on Windows to save memory
+        JOBS_FLAG="--jobs=${{ inputs.nuitka_jobs }}"
+        if [[ "${{ inputs.platform }}" == "windows" ]]; then
+          JOBS_FLAG="--jobs=1"
+        fi
+
+        python -m nuitka --standalone --onefile --assume-yes-for-downloads \
+          --include-package=tutorials \
+          --follow-imports \
+          $JOBS_FLAG \
+          --output-filename="${{ inputs.output_filename }}" \
+          "${{ inputs.entry_path }}"
